@@ -1,0 +1,21 @@
+---
+layout: post
+title: "Firebug"
+date: 2007-02-01 15:42
+comments: true
+categories: web
+author: David Glassborow
+---
+I've been having a lot of problems with comments on this blog taking forever to post, being silently rejected, etc.  After lots of messing around, I found it to be a combination of a) A theme that doesn't handle problems with comments being locked and b) the built in anti spam protection making comments take 30 seconds rather than half a second to post.
+
+I never want to calculate how much of my life I've lost to spam or spam filters, doesn't bare thinking about.
+
+Apologies to anybody who tried to post a comment.
+
+Whilst doing this, I used a great new feature of the absolutely essential web development plug in for Firefox, [Firebug](http://getfirebug.com/). One of the new views, network activity monitoring, shows all the files loaded (the contents of the request and response) and how long overall the process took.
+<!--more-->
+Absolutely essential for debugging AJAX code, but also brilliant to see where you can speed up your page load times.  The following shows me debugging some time issues on one of a site using [Virtual Earth](http://dev.live.com/virtualearth/default.aspx?app=virtual_earth). Watching some of the files load from Microsoft's site, and take 10 seconds, suggested I make key files local. This massively reduces the load times, and makes the whole site feel much nicer.
+
+![Firebug](/images/dave/firebug.png)
+
+I cannot recommend Firebug strongly enough !

@@ -1,0 +1,24 @@
+---
+layout: post
+title: "DU90 - Assessing the Quality of Drug Prescribing"
+date: 2015-03-30 15:44:50 +0100
+comments: true
+categories: Data
+author: Dan Jones
+---
+
+One of the key principles behind the [Define Platform](http://www.rx-info.co.uk/products/define.ashx) (an ongoing development in our collaboration with [Rx-info](http://www.rx-info.co.uk/)) is to turn drug prescribing data into information on which financial and clinical decisions can be based.
+ <!--more-->
+We've been working on a good example of this recently: using the Drug Utilization 90% (DU90) method to assess and benchmark the quality of drug prescribing across NHS Trusts.  For details of the DU90 method see the [1997 paper in Pharmacoepidemiology and Prescription](http://www.researchgate.net/profile/Bjorn_Wettermark/publication/13657446_Drug_utilization_90--a_simple_method_for_assessing_the_quality_of_drug_prescribing/links/545b1eb50cf2c46f664394a9.pdf).
+ 
+![Example of DU90 graphs from pdf](/files/DU90_from_pdf.png)
+ 
+We've previously used the hundreds of millions of drug prescribing records gathered and stored by the Define Platform to produce graphs of drug product usage:
+ 
+![Example of Define report showing drug product usage](/files/DU100.png)
+ 
+We've now extended the options for these reports to allow NHS professionals to restrict the view to the top 90% of drug usage for their Trusts:
+ 
+![Screenshot of DU90 graph in Define](/files/DU90.png)
+ 
+The historic data available through the Define Platform will also provide a view of how adherence to recommended drugs has changed over time (something we're currently working on).  These recent additions to the Define Platform will provide quick and easy access to this important benchmark allowing health professionals to efficiently target changes in prescribing and clinical practice.

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Beachlive</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+	<style>
+		html, body, #map { height:100%; width:100%; padding:0px; margin:0px; }
+
+		.leaflet-control-command-interior
+		{
+		    width: 200px;
+		    height: 200px;
+				fillOpacity: 0.1;
+		    background-position: 50% 50%;
+		    background-repeat: no-repeat;
+		    display: block;
+		    padding: 3px;
+		    border-radius: 4px;
+		    -webkit-border-radius: 4px;
+		    -moz-border-radius: 4px;
+		    box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65);
+		    cursor: auto;
+		    text-align: center;
+		    background-color: #FFFFFF;
+		}
+
+	</style>
+</head>
+<body>
+	<div id="map"></div>
+ 	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="bl.js"></script>
+	<script>
+
+		// Constants for attribution
+		var osm = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ';
+		
+		var mb_attribution = osm +	'Imagery © <a href="http://mapbox.com">Mapbox</a>';
+		var thu_attribution = osm +	'Imagery © <a href="http://www.thunderforest.com">Thunderforest</a>';
+
+		// Build different tile layers (the id is what switchs between different mapbox tiles)
+		var normal  = L.tileLayer('https://{s}.tiles.mapbox.com/v3/examples.map-i875mjb7/{z}/{x}/{y}.png', { attribution: mb_attribution}),
+		    land    = L.tileLayer('http://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png', { attribution: thu_attribution}),
+				cf  = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: osm});
+
+		function getJsonFromUrl() {
+		  var query = location.search.substr(1);
+		  var data = query.split("&");
+		  var result = {};
+		  for(var i=0; i<data.length; i++) {
+		    var item = data[i].split("=");
+		    result[item[0]] = item[1];
+		  }
+		  return result;
+		}
+
+		var url_params = getJsonFromUrl();	
+		// Load the map, overriing location by url params if provided
+		var map = L.map('map', {
+			center: [ url_params.lat || 50.505, url_params.lng || -4.49],
+			zoom: url_params.zoom || 8,
+			layers: [normal]
+		});
+
+		var baseLayers = {
+			"Normal": normal,
+			"Land": land,
+			"Open streetmap": cf
+		};
+
+
+		L.Control.Command = L.Control.extend({
+		    options: {
+		        position: 'bottomright',
+		    },
+				
+		    onAdd: function (map) {
+		        var controlDiv = L.DomUtil.create('div', 'leaflet-control-command');
+		        this.ui = L.DomUtil.create('div', 'leaflet-control-command-interior', controlDiv);
+						$('.leaflet-control-command').hide();						
+		        return controlDiv;
+		    },
+				
+				showInfo: function(beach) {
+					if( beach ) {
+						$('.leaflet-control-command').show();
+						this.ui.innerText = beach.BeachDescription;
+					} else {
+						$('.leaflet-control-command').hide();
+						this.ui.innerText = "";
+					}
+				}
+				
+		});
+		
+		L.control.command = function (options) {
+		    return new L.Control.Command(options);
+		};		
+		
+
+		var details = L.control.command();
+		$('.leaflet-control-command').hide();
+
+		function beach_clicked(a,b,c) {
+			var src = a.layer.options.model;
+			details.showInfo(src);
+		}
+		
+		function beach_over(a,b,c) {
+			var src = a.layer.options.model;
+			details.showInfo(src);
+		}
+		
+		function beach_out(a,b,c) {
+			details.showInfo(null);
+		}
+
+		var beach_layer = new L.FeatureGroup();
+		
+		var geojsonMarkerOptions = {
+		    radius: 5,
+		    fillColor: "#ff7800",
+		    color: "#EE4500",
+		    weight: 1,
+		    opacity: 1,
+		    fillOpacity: 0.8
+		};
+
+		var filters = {};
+		var filter_arr = [];
+
+		function load_beaches(beaches) {
+			
+			for(var i in beaches) {
+				var b = beaches[i];
+
+
+				var marker = L.marker( [b.EventLat, b.EventLon], { 
+					title: b.Title,
+					model: b
+				} );
+				
+				// Add to beach 
+				marker.addTo(beach_layer);
+				
+				// Add to filters
+				for(f_index in b.FilterCategories) {
+					var f = b.FilterCategories[f_index];
+					var ly = filters[f];
+					// Great a later if we need to
+					if( !ly ) {
+						ly = new L.FeatureGroup();
+						filters[f] = ly;
+						filter_arr.push(f)
+					}
+					marker = L.marker( [b.EventLat, b.EventLon], { 
+										title: b.Title,
+										model: b
+									} );					
+					marker.addTo(ly);				
+				}				
+			}
+			filters['All'] = beach_layer;	
+			
+			for(f in filters) {
+				var fx = filters[f];
+				fx.on('mouseover', beach_over );
+				fx.on('mouseout', beach_out );				
+			}
+			
+			L.control.layers(baseLayers, filters, { collapsed: false } ).addTo(map);
+		}
+		
+		
+		
+		
+		
+		details.addTo(map);
+
+		//load_beaches(beaches);
+
+		$.getJSON('http://widgets.beachlive.co.uk/BeachesService', function(dt) { load_beaches(dt)} );
+
+		/*
+		L.geoJson(beaches, {
+		    pointToLayer: function (feature, latlng) {
+		        return L.circleMarker(latlng, geojsonMarkerOptions);
+		    },
+			onEachFeature: onEachFeature
+		}).addTo(beach_layer);
+		*/
+	</script>
+</body>
+</html>
