@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Professional Development on a MacBook Pro</title>
+  <link rel="stylesheet" href="/files/main.css">
+  <link rel="alternate" type="application/rss+xml" title="Concept First Blog" href="feed.xml">
+
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-774963-2', 'auto');
+        ga('send', 'pageview');
+    </script>
+  
+</head>
+    <body>
+        <header class="site-header" role="banner">
+            <div class="wrapper">
+            <a class="site-title" href="/">Concept First Blog</a>
+                <nav class="site-nav">
+                    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+                    <label for="nav-trigger">
+                        <span class="menu-icon">
+                            <svg viewBox="0 0 18 15" width="18px" height="15px">
+                                <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" />
+                                <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" />
+                                <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" />
+                            </svg>
+                        </span>
+                    </label>
+
+                    <div class="trigger">
+                        <a class="page-link" href="/about/">About</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="page-content" aria-label="Content">
+
+            
+<div class="wrapper">
+    <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+        <header class="post-header">
+            <h1 class="post-title" itemprop="name headline">Professional Development on a MacBook Pro</h1>
+            <p class="post-meta">
+                <time datetime="12/07/2007 16:53:00" itemprop="datePublished">Jul 12, 2007</time>
+                • <span itemprop="author" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">David Glassborow</span></span>
+            </p>
+        </header>
+
+        <div class="post-content" itemprop="articleBody">
+            <p>Like a number of people in the Delphi Community ( <a href="http://www.stevetrefethen.com/blog/RunningWindowsVistaOnAMacBookPro.aspx">Steve Trefethen</a>, <a href="http://www.distribucon.com/blog/PermaLink,guid,0966f2d8-377b-4223-99b0-b4feff53cd60.aspx">Dan Miser</a> ), and the development community as a whole, I now do all my development on a MacBook Pro. I changed to an Apple machine six months ago, for a number of reasons:</p>
+<ul>
+<li>I needed a new laptop, and the MacBook Pro hardware is so goddamn thin, light, and good looking.</li>
+<li>I am becoming increasingly disillusioned by Windows, especially the new <a href="http://www.forbes.com/security/2007/02/10/microsoft-vista-drm-tech-security-cz_bs_0212vista.html">DRM</a> stuff.</li>
+<li>I fancied trying out OSX, a change is as good as a rest and all that.</li>
+<li>Bootcamp and virtualisation allow me to use Windows XP on an Apple laptop.</li>
+<li>The web is freeing us from being locked into particular Operating Systems.</li>
+</ul>
+<p>As a professional developer, most of my clients run Windows, and most of my native development is done using Visual Studio 2005 or Delphi 2006, connecting to SQL Server or Oracle backends. I boot my laptop into Windows to do this work, or use Parallels to run it with Mac OSX (when I got my MacBook Pro I got it with 3G of RAM so Windows runs pretty fast inside OSX). Increasingly though I am doing web development, which means I can do much more work inside just OSX.</p>
+<p>The more I have used OSX, the more I prefer it to Windows, so I have put together this list of tools and hints for doing professional development on OSX:</p>
+<!--more-->
+<h2 id="using-bootcamp">Using Bootcamp</h2>
+<ul>
+<li>Steve has got an excellent <a href="http://www.stevetrefethen.com/blog/WindowsKeyboardShortcutsOnAMacBookPro.aspx">list</a> of the keyboard mapping for Windows</li>
+<li><a href="http://www.parallels.com/products/desktop/">Parallels</a> allows runs Windows (from a bootcamp partition) in OSX</li>
+<li>As does <a href="http://www.vmware.com/products/desktop/fusion.html">VMWare</a></li>
+</ul>
+<h2 id="using-osx">Using OSX</h2>
+<p>One of the things there first confused me using OSX is the link between a visual Window and a running program. Having used Windows for the best part of 15 years, I had the strong mental link between having a open window and having a program running. OSX is much more like the systray in a way. In most instances, a program carries on running even if all its windows are shut. At first this seems odd, but now I am actually used to Mail and iCal running in the background, collecting mail and showing me reminders, without having windows cluttering up the place or being minimised. Also the dock changes icons depending on status of the program, so I can see that new mail is waiting, without requiring an open window to tell me.</p>
+<p>I guess it is the unix heritage, but OSX seems much happier having loads of programs running a the same time, than Windows would (or maybe this laptop has just got too much memory).</p>
+<p>Another change from the Windows way of thinking is about installation of software. In OSX an application is a directory with a name of BlahBlah.app. It contains all that is necessary to run. So drag and drop to install software, move things around as desired, and delete it when no longer wanted. Only software that needs to make system changes needs to have install scripts.</p>
+<p>You need to install <a href="http://quicksilver.blacktree.com/">Quicksilver</a> for launches programs, and more advanced voodoo. Have a look at some of the screen casts at <a href="http://feeds.feedburner.com/TheAppleBlogScreencasts">The Apply Blog</a>, a good beginner one is <a href="http://theappleblog.com/2007/06/29/screencast-quicksilver-for-beginners/">here</a>. You won't believe for a powerful bit of software it is.</p>
+<p>Another thing worth getting your head around is this idea of OSX services. These are simple 'services' that are provided to all programs running, accessible of the programs menu. While there are some useful ones built in, there really come into the own where you start changing them using <a href="http://www.manytricks.com/servicescrubber/">Service Scrubber</a> and <a href="http://wafflesoftware.net/thisservice/">This Service</a>. See some examples from <a href="http://daringfireball.net/2007/04/google_lucky_thisservice">John Gruber</a> about writing your own scripts and making them available to all apps (although I'd recommend using Ruby over Perl ;-).</p>
+<h2 id="web-development">Web Development</h2>
+<p>It goes without saying that you should be using Firefox with Firebug for web development. Day to day browsing I use <a href="http://www.caminobrowser.org/">Camino</a> which is the firefox engine inside a more OSX integrated and looking program.</p>
+<ul>
+<li><a href="http://macromates.com/">Textmate</a> is a great editor, as most people know, but if you are doing any JavaScript development make sure you get the <a href="http://macromates.com/blog/2007/javascript-tools/">JS Tools</a> bundle. Having your script 'lint'ed everything you save is a great productivity improver. Also get the <a href="http://projects.validcode.net/getbundle">GetBundle</a> bundle to make it easy to manage extensions and find new ones. Blog writing is easy with the built in <a href="http://daringfireball.net/projects/markdown/">markdown</a> support.</li>
+<li><a href="http://www.eclipse.org/">Eclipse</a> (especially with the new CodeGear betas running inside Eclipse ) has plugins to do pretty much everything (although I still use Textmate most of the time).</li>
+<li>Anybody know of a Fiddler equivalent for OSX ?</li>
+</ul>
+<h2 id="subversion">Subversion</h2>
+<p>Does anybody use anything else anymore ?
+I use the tigris plugin <a href="http://scplugin.tigris.org/">scplugin</a> to have subversion integration with the finder. It is not quite as good as tortoise. There is also <a href="http://www.lachoseinteractive.net/en/community/subversion/svnx/features/">Svnx</a> which is ok, but I don't find the UI all that intuitive.</p>
+<h2 id="database-access">Database Access</h2>
+<p>For connecting to Oracle, I use the free <a href="http://www.oracle.com/technology/products/database/sql_developer/index.html">SQL Developer</a> which has a native OSX version. Most of the open source databases have native clients (e.g. Postgres), but otherwise I use <a href="http://www.aquafold.com/downloads.html">Aqua Studio</a> v4.7 which is free. One of the nice things is most of the tools are Java based, so if you can find a JDBC package for your database, chuck it in /Library/Java/Extensions and then all the Java apps on your machine have connectivity to it (I have found ones for SQL Server, Oracle, MySql and Postgres).</p>
+<h2 id="other-languages-database-engines">Other Languages / Database Engines</h2>
+<ul>
+<li>Anything available in the Open-source world, if not explicitly released for OSX, is normally available on <a href="http://darwinports.com">DarwinPorts</a> or <a href="http://finkproject.org">Fink</a>, projects to make linux/unix software compilable on OSX (which is a unix variant behind the scenes), and easily installable handling all the dependancies etc.</li>
+</ul>
+<hr />
+<p>Are there any useful development tools or hints I have missed ? Let me know and I'll try and keep a development bias list on this page.</p>
+<p>And if your still using boring old Windows, come and join the revolution !</p>
+<h2 id="comments-on-old-platform">Comments (on old platform)</h2>
+<p>Steve Trefethen said ...</p>
+<blockquote>
+<p>Great post. It's good to have  growing list of bloggers using this setup for Development to share information like this.  Thanks and subscribed!</p>
+</blockquote>
+<p>Fernando Madruga said ...</p>
+<blockquote>
+<p>Nice to know that using OSX can be a viable solution now that MS is screwing up big time on their OSes! Heck, my father-in-law, which is a &quot;regular&quot; computer user, just had his notebook re-formated and installed Windows XP to <em>upgrade</em> his brand new Vista! It suits him well, as I had warned him against Vista but then he bought a new laptop with Vista on it and after a couple months of suffering decided it was just about time to start working again! :)</p>
+</blockquote>
+<p>Andre Voget said ...</p>
+<blockquote>
+<p>We also develop our software programs on Mac OS X using Parallels Desktop. It's great to make backup images of the whole development setup.</p>
+</blockquote>
+<p>Jose Crespo said ...</p>
+<blockquote>
+<p>Me too.
+I have a MacBook 2Gb. I don't use BootCamp. With Parallels I can run Delphi, VisualStudio, SQLServer,Firebird. My VM is congigured with 700MB. Untin my MacBook, I had two computers. Always a mac for enjoy and photos (since 1986 ... not the same of course, but I have all of them) and a PC for development in Delphi and VisualStudio.</p>
+</blockquote>
+<p>Rob Uttley said ...</p>
+<blockquote>
+<p>My situation/setup is similar to Jose Crespo's (above).... 2Gb MacBook Pro (last summer's model, unfortunately, so it's Core Duo not Core 2 Duo).</p>
+</blockquote>
+<blockquote>
+<p>When I'm in the office it's plugged into an apple keyboard, mouse and 21&quot; Cinema display, the laptop on a griffin stand and the laptop screen being a good place to leave Mail.app and browser windows open whilst I'm working on the big screen.</p>
+</blockquote>
+<blockquote>
+<p>I use Parallels (v2, build 3214) with a 15Gb virtual machine that include Delphi 7, SQL Server Express, Interbase, Office and chunks of VS2005, all running under XP Pro SP2. The Parallels system has about 700Mb of ram assigned to it, and configured so that it appears on my network as a machine in it's own right, alongside the Mac and various test machines (both real and virtual). I don't make use of coherence etc - I find it less confusing when developing to have the PC window taking almost all of the display space anyway.</p>
+</blockquote>
+<blockquote>
+<p>The performance is great, and the convenience of bring able to back-up an entirely 'bootable' copy of my dev box every night is awesome (I have a little piece of applescript/automator that just pushes the vm harddrive over to a drive on the main file server). Given the price of diskspace, and the speed of networks, not only is this kind of backup perfectly feasible but once you start using it you quickly have a handful of different virtual machines, and you put the images on the hard drive that you're going to need for the next couple of days' work.... it's a really nice way to have everything to hand without having one huge monolithic drive with absolutely everything installed (and all the attendent problems that can bring).</p>
+</blockquote>
+<blockquote>
+<p>Talking of convenience, the MacBook Pro is a dream. Okay, it's not small thanks to the 17&quot; screen, but it's slim and light, and when I get on a train and start working it just goes and goes and goes - I get into the two-and-a-half-hours and still running stage frequently without making any real sacrifices on the battery front.</p>
+</blockquote>
+<blockquote>
+<p>I'm not a huge fan of the keyboard, and having to ctrl-click on the trackpad for a right-click (when I haven't got a mouse plugged in) is a pain. Once you get used to OS X I find it a nicer place to 'play' in - my fiance is getting used to OS X over Windows XP and the next box I buy my mum will run Tiger/Leopard, not XP/Vista. For most of the time, it really does just work. :-)</p>
+</blockquote>
+<blockquote>
+<p>Best of all is the reaction you get when you go out to a client's to demo something and they see you break out a Mac, then rapidly switch into a PC in a Window... :-)</p>
+</blockquote>
+<h2 id="followup-from-2011">Followup from 2011</h2>
+<p>Revisiting this page when moving it to another blog engine, I'd suggest:</p>
+<ul>
+<li>VMWare fusion for virtualisation</li>
+<li>Navigate lite database tools (free and on the AppStore)</li>
+<li>Versions for Subversion</li>
+<li>GitX for git</li>
+<li>Homebrew for installing software</li>
+<li><a href="http://hem.bredband.net/catacombae/hfsx.html">HFSExplorer</a> to access files when inside bootcamp</li>
+<li><a href="http://cord.sourceforge.net/">CoRD</a> for remote desktop into windows machines</li>
+</ul>
+
+        </div>
+
+        <div id="disqus_thread"></div>
+        <script>
+            var disqus_config = function () {
+                this.page.url = 'https://blogs.conceptfirst.com/2007/07/12/professional-development-on-a-macbook-pro.html';
+                this.page.identifier = 'https://blogs.conceptfirst.com/2022/09/12/2007/07/12/professional-development-on-a-macbook-pro.html';
+            };
+
+            (function () {
+                var d = document, s = d.createElement('script');
+                s.src = 'https://conceptfirst.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+    </article>
+</div>
+
+
+
+
+        </main>
+
+        <footer class="site-footer">
+            <div class="wrapper">
+            <h2 class="footer-heading">Concept First Blog</h2>
+                <div class="footer-col-wrapper">
+                    <div class="footer-col footer-col-1">
+                        <ul class="contact-list">
+                        <li>Concept First Blog</li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-2">
+                        <ul class="social-media-list">
+                            <li>
+                                <a href="https://github.com/conceptfirst">
+                                    <span class="icon icon--github">
+                                        <svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z" /></svg>
+                                    </span><span class="username">conceptfirst</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-3">
+                        <p>IT consultancy, web development, data analysis and application development</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>

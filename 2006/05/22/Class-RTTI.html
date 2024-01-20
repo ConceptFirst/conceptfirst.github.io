@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Class RTTI</title>
+  <link rel="stylesheet" href="/files/main.css">
+  <link rel="alternate" type="application/rss+xml" title="Concept First Blog" href="feed.xml">
+
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-774963-2', 'auto');
+        ga('send', 'pageview');
+    </script>
+  
+</head>
+    <body>
+        <header class="site-header" role="banner">
+            <div class="wrapper">
+            <a class="site-title" href="/">Concept First Blog</a>
+                <nav class="site-nav">
+                    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+                    <label for="nav-trigger">
+                        <span class="menu-icon">
+                            <svg viewBox="0 0 18 15" width="18px" height="15px">
+                                <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" />
+                                <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" />
+                                <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" />
+                            </svg>
+                        </span>
+                    </label>
+
+                    <div class="trigger">
+                        <a class="page-link" href="/about/">About</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="page-content" aria-label="Content">
+
+            
+<div class="wrapper">
+    <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+        <header class="post-header">
+            <h1 class="post-title" itemprop="name headline">Class RTTI</h1>
+            <p class="post-meta">
+                <time datetime="22/05/2006 10:08:00" itemprop="datePublished">May 22, 2006</time>
+                • <span itemprop="author" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">David Glassborow</span></span>
+            </p>
+        </header>
+
+        <div class="post-content" itemprop="articleBody">
+            <p>This post follows up my <a href="/blog/2006/05/11/Interface-RTTI/">previous</a> one about RTTI in Delphi, inspired by Hallvard's 2 posts <a href="http://hallvards.blogspot.com/2006/04/published-methods_27.html">here</a> and
+<a href="http://hallvards.blogspot.com/2006/05/under-hood-of-published-methods.html">here</a>, and covers some advanced RTTI features in Delphi that I haven't seen mentioned anywhere else.</p>
+<!--more-->
+<h1 id="methodinfo">$METHODINFO</h1>
+<p>While playing around with Websnap in Delphi, trying to extend some of the objects available for scripting, I
+came across the compiler directive METHODINFO.</p>
+<p>The online documentation says:</p>
+<blockquote>
+<p>The $METHODINFO switch directive is only effective when runtime type information (RTTI) has been turned on with the
+{$TYPEINFO ON} switch. In the {$TYPEINFO ON} state, the $METHODINFO directive controls the generation of more detailed
+method descriptors in the RTTI for methods in an interface. Though {$TYPEINFO ON} will cause some RTTI to be generated
+for published methods, the level of information is limited. The $METHODINFO directive generates much more detailed
+(and much larger) RTTI for methods, which describes how the parameters of the method should be passed on the stack and/or in registers.
+There is seldom, if ever, any need for an application to directly use the $METHODINFO compiler switch. The method
+information adds considerable size to the executable file, and is not recommended for general use.</p>
+</blockquote>
+<p>My <a href="/blog/2006/05/11/Interface-RTTI/">previous</a> article showed this isn't completely accurate, detailed RTTI is available for any Interface which
+has $TYPEINFO or $M around it. $METHODINFO seems to affect classes, in particular it will store detailed RTTI information
+for not only Published methods, but also Public ones.</p>
+<p>Doing a search for this compiler directive in the delphi win32 source code gives us only 1 instance in WebSnapObjs.pas.</p>
+<pre><code>{$METHODINFO ON}
+TScriptableObject = class(TObjectDispatch)
+private
+  FLookupList: TStringList;
+  FLookupValues: TInterfaceList;
+protected
+  FPreferChild: Boolean;
+  function DispatchOfName(const AName: string): IDispatch; virtual;
+  function FindObject(const AName: string): TObject; virtual;
+public
+  constructor Create;
+  destructor Destroy; override;
+  class function DispatchOfObject(const AObject: TObject): IDispatch;
+  function GetIDsOfNames(const IID: TGUID; Names: Pointer;
+    NameCount: Integer; LocaleID: Integer; DispIDs: Pointer): HRESULT;
+    override;
+  function Invoke(DispID: Integer; const IID: TGUID; LocaleID: Integer;
+    Flags: Word; var Params; VarResult: Pointer; ExcepInfo: Pointer;
+    ArgErr: Pointer): HRESULT; override;
+end;
+{$METHODINFO OFF}
+</code></pre>
+<h2 id="websnap">Websnap</h2>
+<p>Websnap is the poor cousin in the web framework world for delphi. Its never had much support, and seems now to be
+overshadow by ASP.net and Intraweb. I personally quite like it, although I code my own templates in VBScript or JavaScript
+rather than use any of the Design Time webpage design stuff.</p>
+<p>Under the hood, websnap uses the <a href="http://msdn.microsoft.com/scripting/">ActiveScript</a> engines provided in Windows. ActiveScript is a scripting host that can support
+many different COM based scripting languages, and Windows comes with VBScript and JScript (which is basically JavaScript).
+Other ActiveScript lanaguages are avaialbe including <a href="http://www.activestate.com/Products/ActivePython/">Python</a> and <a href="http://www.activestate.com/Products/ActivePerl/">Perl</a>.</p>
+<p>The original ASP by Microsoft uses the ActiveScripting engine to do its work. The asp template is turned into a vBScript or
+JScript program containing the HTML to output as well as the logic of the page. This is fed into the ActiveScripting engine
+and compiled ready for running. The ActiveScripting engine then has 'objects' added to it so the program can do useful work.
+The most obvious one is the Response object, but there are others like the Session object, etc. The program is then run and
+the page rendered.</p>
+<p>Websnap pages, at least those using a TPageProducer, use this same process to produce HTML pages. The problem for the Delphi
+deisgners was how to link arbitary Delphi objects up to the ActiveScripting engine, which uses late bound IDispatch COM for
+communication. The IDispatch interface, one of the main underpining of the COM framework in Windows, uses a single call,
+<em>Invoke</em> for all method calls. This is where $METHODINFO comes it, the rich method RTTI is provided to allow a single procedure
+entry, Invoke, to call arbitary Delphi methods.</p>
+<p>The VBScript or Javascript script running in the scripting of the websnap page needs to talk to Delphi objects (e.g. Page,
+Session), and it uses this Rich RTTI to acheive this. You can see the websnap objects that are exposed to the script, have a look in
+WebSnapObjs.pas, where TResponseObj, TProducerObj, etc.</p>
+<p>The unit ObjAuto contains the code and header for retrieving the RTTI information using the following function:</p>
+<pre><code>function GetMethodInfo(Instance: TObject; const MethodName: ShortString): PMethodInfoHeader;
+</code></pre>
+<p>In turn, the base class of TScriptableObject (marked with $METHODINFO) uses the RTTI to find methods, and call them, at run time.</p>
+<h2 id="objauto.pas">ObjAuto.pas</h2>
+<p>This contains the code to search for a method's RTTI. Looking at GetMethodInfo, you can see it uses the system.pas vmtMethodTable
+offset to get hold the method table for the class. It then uses a search to find the correct entry. It also contains the code that
+allows an arbitary call to an object supporting RTTI to jump to the correct routine:</p>
+<pre><code>function ObjectInvoke(Instance: TObject; MethodHeader: PMethodInfoHeader;
+  const ParamIndexes: array of Integer; const Params: array of Variant): Variant;
+</code></pre>
+<p>As you can see you just pass it parameters and variants, and it packages them into the correct types and does the call. The source
+code to this call shows all the complexity of packaging up all the parameters according different conventions, etc. This is ultimately
+how VBScript objects call methods on Delphi objects inside Websnap.</p>
+<h2 id="detailedrtti.pas">DetailedRTTI.pas</h2>
+<p>While playing with the metadata, I coded a few <a href="/blog/2006/05/08/class-helpers-good-or-bad/">helper classes</a> to aid exploration. You can download the <a href="/files/DetailedRTTI.pas">code</a> if you want to
+have somewhere to start. Just calling .RTTIMethodsAsString() on any object to get a list of its methods and their parameters. Its a
+bit rough and ready but you're welcome to use it for whatever.</p>
+<h1 id="summary">Summary</h1>
+<p>This article, and the <a href="/blog/2006/05/11/Interface-RTTI/">previous</a> one have shown that rich metadata for methods is available in Delphi, with supporting routines
+for accessing it. Interface metadata allows the VCL to support SOAP, multiple methods multiplexed to a single call. The rich class
+metadata allows the VCL to support a single function automatically being routed to other methods, allowing Websnap to
+expose objects to COM IDispatch automatically.</p>
+<h1 id="comments-originally-on-blogger.com">Comments (originally on blogger.com)</h1>
+<p>Hallvard Vassbotn said...</p>
+<blockquote>
+<p>Great posts, David!</p>
+<p>I reference them <a href="http://hallvards.blogspot.com/2006/05/david-glassborow-on-extended-rtti.html">here</a></p>
+</blockquote>
+
+        </div>
+
+        <div id="disqus_thread"></div>
+        <script>
+            var disqus_config = function () {
+                this.page.url = 'https://blogs.conceptfirst.com/2006/05/22/Class-RTTI.html';
+                this.page.identifier = 'https://blogs.conceptfirst.com/2022/09/12/2006/05/22/Class-RTTI.html';
+            };
+
+            (function () {
+                var d = document, s = d.createElement('script');
+                s.src = 'https://conceptfirst.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+    </article>
+</div>
+
+
+
+
+        </main>
+
+        <footer class="site-footer">
+            <div class="wrapper">
+            <h2 class="footer-heading">Concept First Blog</h2>
+                <div class="footer-col-wrapper">
+                    <div class="footer-col footer-col-1">
+                        <ul class="contact-list">
+                        <li>Concept First Blog</li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-2">
+                        <ul class="social-media-list">
+                            <li>
+                                <a href="https://github.com/conceptfirst">
+                                    <span class="icon icon--github">
+                                        <svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z" /></svg>
+                                    </span><span class="username">conceptfirst</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-3">
+                        <p>IT consultancy, web development, data analysis and application development</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>

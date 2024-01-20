@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Basic fullscreen map</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+	<style>
+		html, body, #map { height:100%; width:100%; padding:0px; margin:0px; }
+	</style>
+</head>
+<body>
+	<div id="map"></div>
+ 	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+ 	<script src="beaches.js"></script>
+	<script>
+
+		// Constants for URL and attribution
+		var tile_url = 'https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png';
+		var attribution = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+				'Imagery © <a href="http://mapbox.com">Mapbox</a>';
+
+		// Build different tile layers (the id is what switchs between different mapbox tiles)
+		var normal    = L.tileLayer(tile_url, { id: 'examples.map-i875mjb7', attribution: attribution}),
+			  dark      = L.tileLayer(tile_url, { id: 'examples.map-0l53fhk2', attribution: attribution}),
+		    grayscale = L.tileLayer(tile_url, { id: 'examples.map-20v6611k', attribution: attribution});
+
+		// Load the map
+		var map = L.map('map', {
+			center: [50.505, -4.49],
+			zoom: 8,
+			layers: [normal]
+		});
+
+		var baseLayers = {
+			"Normal": normal,
+			"Grayscale": grayscale,
+			"Dark": dark
+		};
+
+		var beach_layer = new L.LayerGroup();
+
+		var overlays = {
+			"Beaches": beach_layer
+		};
+
+		L.control.layers(baseLayers, overlays).addTo(map);
+		
+		var geojsonMarkerOptions = {
+		    radius: 5,
+		    fillColor: "#ff7800",
+		    color: "#EE4500",
+		    weight: 1,
+		    opacity: 1,
+		    fillOpacity: 0.8
+		};
+
+		// Function for displaying appropriate information in the popup
+		function onEachFeature(feature, layer) {
+			if (!feature.properties || !feature.properties.swell)
+				return;
+			var popupContent = "<h3>" + feature.properties.name + "</h3>" + "Swell direction: " +
+				feature.properties.swell + "<br><a href='" + feature.properties.link + "'>Surf report</a>"
+			layer.bindPopup(popupContent);
+		}
+
+		L.geoJson(beaches, {
+		    pointToLayer: function (feature, latlng) {
+		        return L.circleMarker(latlng, geojsonMarkerOptions);
+		    },
+			onEachFeature: onEachFeature
+		}).addTo(beach_layer);
+	</script>
+</body>
+</html>

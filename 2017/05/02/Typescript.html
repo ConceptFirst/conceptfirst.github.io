@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TypeScript: Setting Up and Settling In</title>
+  <link rel="stylesheet" href="/files/main.css">
+  <link rel="alternate" type="application/rss+xml" title="Concept First Blog" href="feed.xml">
+
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-774963-2', 'auto');
+        ga('send', 'pageview');
+    </script>
+  
+</head>
+    <body>
+        <header class="site-header" role="banner">
+            <div class="wrapper">
+            <a class="site-title" href="/">Concept First Blog</a>
+                <nav class="site-nav">
+                    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+                    <label for="nav-trigger">
+                        <span class="menu-icon">
+                            <svg viewBox="0 0 18 15" width="18px" height="15px">
+                                <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" />
+                                <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" />
+                                <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" />
+                            </svg>
+                        </span>
+                    </label>
+
+                    <div class="trigger">
+                        <a class="page-link" href="/about/">About</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="page-content" aria-label="Content">
+
+            
+<div class="wrapper">
+    <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+        <header class="post-header">
+            <h1 class="post-title" itemprop="name headline">TypeScript: Setting Up and Settling In</h1>
+            <p class="post-meta">
+                <time datetime="02/05/2017 10:33:00" itemprop="datePublished">May 2, 2017</time>
+                • <span itemprop="author" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">Alex Lorimer</span></span>
+            </p>
+        </header>
+
+        <div class="post-content" itemprop="articleBody">
+            <p>Recently weve been considering the move to something <em>better</em> than JavaScript for front-end development, offering type safety and organisational constructs that more readily support robust code.</p>
+<p>I spent a week exploring TypeScript (a typed <em>superset</em> of JavaScript) as a candidate in Visual Studio 2015. Here are the issues and fixes I encountered along the way, relating to initial setup, libraries, unanticipated runtime/compile-time behaviour, and general comments (focusing on issues that are not obvious from TypeScript <a href="https://www.typescriptlang.org/docs/tutorial.html">documentation</a>).</p>
+<h4 id="tldr">TL;DR,</h4>
+<p><strong>Setup</strong>
+TypeScript is installed by default in VS 2015. However, for non-ASP. NET projects configuration is NOT automated and various elements need to be added to the .csproj file for correct build and debugging behaviour. Integration with ASP. NET projects is easy, and project configuration takes place automatically following the inclusion of the first .ts file.</p>
+<p><strong>Using Library Code</strong>
+Declaration files (typings) are required to consume libraries such as JQuery from TypeScript code (acting like C header files), and these are available for popular libraries via NuGet (DefinitelyTyped is a popular repository). Dependent on configuration, declaration files in a project will be located automatically by IntelliSense.</p>
+<p><strong>Unanticipated Runtime/Compile-time behaviour</strong>
+Despite the appearance of a statically, strongly typed language like C#, there are still limitations to the compile time warnings that TypeScript provides. The initial appearance of more safety than you are actually getting can result in unanticipated runtime behaviour.</p>
+ <!--more-->
+<h4 id="general-comments">General Comments</h4>
+<p>Generally, in my brief experience, the type safety and IntelliSense features that TypeScript provides out-of-the-box makes coding in TypeScript faster and easier, once you get passed the initial settling in. However, re-writing existing JavaScript code in TypeScript (to make it appear less like <em>traditional</em>, pre-<a href="http://es6-features.org">ES6</a> JavaScript by making use of organisational features like classes) can result in quite a bit of refactoring, and may actually result in slightly more code than the original JavaScript file. For existing, pre-ES6 JavaScript code, it may make more sense (quicker and easier) to minimally refactor the code to the point of passing the compiler type checks.</p>
+<p><strong>Note:</strong> Despite claims that TypeScript is a superset of JavaScript, arguably that isn't really the case, so long as TypeScript compile-time errors are regarded as just that (errors) and not just suggestions. In this case, all JavaScript code is NOT valid typescript code.</p>
+<h4 id="initial-setup">Initial Setup</h4>
+<p>Steven Fentons <a href="https://www.stevefenton.co.uk/2012/10/Adding-TypeScript-To-An-Existing-Visual-Studio-Project/">blog post</a> provides useful information for setting up TypeScript support in a VS project.</p>
+<blockquote>
+<p>If you are using Visual Studio 2013 and you have the TypeScript Visual Studio Extension installed, youll get the following message as soon as you add a TypeScript file to your project 'Your project has been configured to support TypeScript...'</p>
+</blockquote>
+<p>However, this only seems to be the case in ASP. NET projects. For non-ASP. NET projects, at least in VS 2013+, the following import clause should be included in the .csproj file manually, as the last child of the Project element.</p>
+<pre><code>&lt;Import Project=&quot;$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets&quot; Condition=&quot;Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')&quot;/&gt;
+</code></pre>
+<p>This will make a TypeScript Build section accessible through the project properties pane in VS</p>
+<p><strong>Important:</strong> If a .tsconfig file (<a href="https://www.typescriptlang.org/docs/handbook/asp-net-4.html#set-up-the-build">recommend</a> in the TypeScript documentation for configuring the transcompiler) is detected somewhere in the project then the TypeScript Build pane becomes disabled. Using a .tsconfig file seems to be buggy in Visual Studio (changes to the .tsconfig do not always seem to be applied and library scripts are not automatically detected - these issues could have been caused by conflicts with the .csproj file, or incorrect .tsconfig formatting), so it seems best to only use the TypeScript Build pane provided by VS.</p>
+<p>Following this manual addition to the .csproj file, navigate to the TypeScript Build pane in the project properties, and perform the following steps.</p>
+<ol>
+<li>Ensure the Configuration dropdown list is set to Debug</li>
+<li>In the Output section tick 'Redirect JavaScript output to directory' and specify the appropriate debug output directory in the provided field &quot;...bin\Debug\Scripts&quot;</li>
+<li>Now set the Configuration dropdown list to Release</li>
+<li>In the Output section tick 'Redirect JavaScript output to directory' and specify the appropriate release output directory in the provided field &quot;...bin\Release\Scripts&quot;</li>
+</ol>
+<p>Now, after making updates to TypeScript files, the TypeScript transcompiler should place the transpiled JavaScript files in the specified locations automatically (this mode dependent behaviour does not seem to be configurable through the use of a .tsconfig file - another reason to use the TypeScript Build pane).</p>
+<p><strong>Note:</strong> In the TypeScript Build pane, &quot;allow implicit 'any' types&quot; is ticked by default. It seems to be generally more useful to disallow implicit 'any' types to take full advantage of compile time type checking.</p>
+<h4 id="debug-setup">Debug Setup</h4>
+<p>To enable TypeScript debugging from the browser the TypeScript Build option 'Generate source maps' must be ticked. For ASP. NET projects this seems to be all that is required.</p>
+<p>If not using ASP. NET, the .ts files should also be explicitly included in the output directory (copy if newer). Also, as the build action for .ts files is automatically and necessarily set to 'TypeScriptCompile' (as opposed to 'Content') an MSBuild task must be added to csproj to copy the .ts files to the output directory (see below).</p>
+<pre><code>  &lt;Target Name=&quot;BeforeBuild&quot;&gt;
+    &lt;ItemGroup&gt;
+      &lt;Content Include=&quot;@(TypeScriptCompile)&quot; Condition=&quot;'$(TypeScriptSourceMap)' == 'true'&quot; /&gt;
+    &lt;/ItemGroup&gt;
+  &lt;/Target&gt;
+</code></pre>
+<p><em>@(TypeScriptCompile)</em> refers to a collection of .ts files that will be automatically defined elsewhere in the .csconfig file. <em>$(TypeScriptSourceMap)</em> is a variable that should be auto generated after making changes in the TypeScript Build project property section, which specifies if source maps are generated (if not TypeScript debugging can't take place anyway, hence the condition in the above MSBuild task).</p>
+<p>Edge appears to not work very well with .ts debugging (it sometimes points to an entirely different location in the TypeScript code), but Chrome seems to do a great job, with far more informative error messages.</p>
+<h4 id="using-library-code-pretty-simple">Using Library Code (pretty simple)</h4>
+<p>Declaration files (typings) are required to consume libraries such as JQuery from TypeScript code, acting as an interface for the transcompiled JavaScript (implementation details are stripped away in TypeScript declaration files).</p>
+<p>DefinitelyTyped is a popular declaration file repository, providing JQuery and other popular library typings. These can be installed via NuGet.</p>
+<p>So long as a .tsconfig file is not being used, IntelliSense seems to locate TypeScript declaration files automatically without needing to specify a folder.</p>
+<h4 id="unanticipated-runtimecompile-time-behaviour">Unanticipated Runtime/Compile-time Behaviour</h4>
+<p><strong>TypeScript Class Definitions are Not Hoisted</strong>
+In TypeScript it seems valid at compile time to declare/define a class at the bottom of a file, and instantiate and use this object somewhere else in that file (as is the case in C#, Java, etc.).</p>
+<p>However, in the transcompiled JavaScript the 'class' definition is not hoisted to the top of the file, or above where it is used (this is a problem as the transpiled JavaScript equivalent of declaring a TypeScript class is to run an immediately invoked function that returns a constructor). Despite the hoisting of variable declarations taking place when JavaScript is interpreted anyway, the actual initialisation of variables are not. This results in a runtime error &quot;Object doesn't support this action&quot; (in Edge) or &quot;... is not a constructor&quot; (in Chrome).</p>
+<p>Moving class declarations above where the classes are instantiated in TypeScript solves this problem (TypeScript does not warn or prompt about this).</p>
+<p>Also be wary of introducing a race condition, through use of the $(document).ready shorthand, as below.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+$(() =&gt; {
+    let myObject = <span style="color:#569CD6;">new</span> MyClass();
+});
+
+<span style="color:#57A64A;">// MyClass definition goes here</span>
+</pre></div>
+<p>The above code will almost always work, unless the JQuery document.ready callback runs before the MyClass definition. It therefore seems best practice to place TypeScript entry points at the bottom of the file, or at least below all type declarations/definitions.</p>
+<p><strong>'this' Keyword Confusion</strong>
+Non-static class members must always be dereferenced with an instance qualifier (instance name, or this, i.e this.property), however care must be taken when using callback or local functions inside TypeScript classes. See the behaviour commented in the code below.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">class</span> MyClass {
+    myProperty: <span style="color:#569CD6;">number</span> = 1;
+
+    <span style="color:#569CD6;">private</span> helperFunction() {
+        console.log(<span style="color:#D69D85;">&quot;myProperty&quot;</span>, <span style="color:#569CD6;">this</span>.myProperty);
+    }
+
+    myMethod() {
+        <span style="color:#569CD6;">this</span>.helperFunction(); <span style="color:#57A64A;">// logs &quot;myProperty 1&quot;</span>
+        localHelperFunction(); <span style="color:#57A64A;">// logs &quot;myProperty undefined&quot;</span>
+
+        <span style="color:#569CD6;">function</span> localHelperFunction() {
+            console.log(<span style="color:#D69D85;">&quot;myProperty&quot;</span>, <span style="color:#569CD6;">this</span>.myProperty);
+        }
+    }
+}
+<span style="color:#569CD6;">new</span> MyClass().myMethod();
+</pre></div>
+<p>Essentially, 'this' does NOT necessarily refer to the class instance when used inside a class, and instead behaves as in JavaScript, referring to the caller of the function (such as the enclosing method).</p>
+<p>TypeScript does not explicitly warn that the 'this.myProperty' inside the localHelperFunction is not defined (or 'this.blahblah' for that matter, probably due to the fact that properties can be added to JavaScript objects at runtime). Nevertheless, this can be detected by clicking on the myProperty declaration and noticing which 'myProperty' references are highlighted by IntelliSense.</p>
+<p><strong>Instance Dereferencing Inconsistencies</strong>
+There are at least three different kinds of syntax for defining the methods of a class, see methods print1, 2, and 3 in the class definition below.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">class</span> MyClass {
+    property: <span style="color:#569CD6;">string</span> = <span style="color:#D69D85;">&quot;Hello&quot;</span>;
+
+    print1 = () =&gt; console.log(<span style="color:#D69D85;">&quot;print1, this.property = &quot;</span>, <span style="color:#569CD6;">this</span>.property);
+
+    print2 = <span style="color:#569CD6;">function</span>() {
+        console.log(<span style="color:#D69D85;">&quot;print2, this.property = &quot;</span>, <span style="color:#569CD6;">this</span>.property);
+    }
+
+    print3() {
+        console.log(<span style="color:#D69D85;">&quot;print3, this.property = &quot;</span>, <span style="color:#569CD6;">this</span>.property);
+    }
+}
+</pre></div>
+<p>The syntax used with print3 is used by Microsoft in the official TypeScript documentation (in the <a href="https://www.typescriptlang.org/docs/handbook/classes.html">Classes</a> section), but the other ways appear to be just as valid (no compile time issues). Instantiating MyClass and calling the print methods directly results in no unexpected behaviour.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+let myClass = <span style="color:#569CD6;">new</span> MyClass();
+
+console.log(<span style="color:#D69D85;">&quot;calling print methods directly...&quot;</span>)
+myClass.print1();
+myClass.print2();
+myClass.print3();
+</pre></div>
+<p><strong>Output</strong></p>
+<blockquote>
+<p>print1, this.property =  Hello
+print2, this.property =  Hello
+print3, this.property =  Hello</p>
+</blockquote>
+<p>However, I encountered an issue when wanting to pass a class' method as an argument to another function. As a simplified example see the code and output below:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+let myClass = <span style="color:#569CD6;">new</span> MyClass();
+let lambda: () =&gt; <span style="color:#569CD6;">void</span>;
+
+console.log(<span style="color:#D69D85;">&quot;calling print methods via a variable (in case you want to pass it around)...&quot;</span>)
+
+lambda = myClass.print1;
+lambda();
+
+lambda = myClass.print2;
+lambda();
+
+lambda = myClass.print3;
+lambda();
+</pre></div>
+<p><strong>Output</strong></p>
+<blockquote>
+<p>print1, this.property =  Hello
+print2, this.property =  undefined
+print3, this.property =  undefined</p>
+</blockquote>
+<p>While print1 (the method that was defined in MyClass as an 'expression bodied member') works as expected, the other two syntaxes result in what appears to be buggy behaviour.</p>
+<p>I looked into why this was the case. See below for the transcompiled JavaScript for defining MyClass.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">var</span> MyClass = (<span style="color:#569CD6;">function</span> () {
+    <span style="color:#569CD6;">function</span> MyClass() {
+        <span style="color:#569CD6;">var</span> _this = <span style="color:#569CD6;">this</span>;
+        <span style="color:#569CD6;">this</span>.property = <span style="color:#D69D85;">&quot;Hello&quot;</span>;
+        <span style="color:#569CD6;">this</span>.print1 = <span style="color:#569CD6;">function</span> () {
+            <span style="color:#569CD6;">return</span> console.log(<span style="color:#D69D85;">&quot;print1, this.property = &quot;</span>, _this.property);
+        };
+        <span style="color:#569CD6;">this</span>.print2 = <span style="color:#569CD6;">function</span> () {
+            console.log(<span style="color:#D69D85;">&quot;print2, this.property = &quot;</span>, <span style="color:#569CD6;">this</span>.property);
+        };
+    }
+    MyClass.prototype.print3 = <span style="color:#569CD6;">function</span> () {
+        console.log(<span style="color:#D69D85;">&quot;print3, this.property = &quot;</span>, <span style="color:#569CD6;">this</span>.property);
+    };
+    <span style="color:#569CD6;">return</span> MyClass;
+}());
+</pre></div>
+<p>The problem is again related to use of the keyword 'this', which obviously varies based on the calling context.</p>
+<p>You can see that the TypeScript developers have got around the issue by storing a '_this' variable to capture the MyClass context. However '_this' is only dereferenced by print1, while print2 and print3 utilize the 'this' keyword directly.</p>
+<p>When called normally 'this' refers to MyClass. However, when assigned to and invoked via a variable, 'this' ends up referring to the global Window object. This was the context at the time of lambda initialisation. Nevertheless, this inconsistency is actually recognised as proper TypeScript behaviour. The fat arrow syntax/semantics is newer, and is recognised as the means of correctly keeping a class this context (see this TypeScript <a href="https://github.com/Microsoft/TypeScript/wiki/%27this%27-in-TypeScript#user-content-use-instance-functions">wiki article</a>).</p>
+<h4 id="tslint">TSLint</h4>
+<p>I looked into the use of <a href="https://palantir.github.io/tslint/">TSLint</a>, hoping that it would provide compile time warnings for some of these issues that are not picked up by the TypeScript compiler. Despite available NuGet packages it appears to be difficult to setup in VS 2015 (at least for non-ASP. NET projects). The easiest way seems to be to install Mads Kristensen's <a href="https://marketplace.visualstudio.com/items?itemName=MadsKristensen.WebAnalyzer">Web Analyzer extension</a>.</p>
+<p>TSLint picked up on a missing colon in my code and a call to parseInt() without using a radix argument. Other than that, by default TSLint is very strict about always using type definitions, even when the TypeScript compiler and IntelliSense can easily infer the type or when the type is blatantly obvious to developers, i.e.</p>
+<p><code>let i = 0;</code></p>
+<p>needs to become</p>
+<p><code>let i : number = 0;</code></p>
+<p>Despite this, unfortunately TSLint doesn't provide warnings for any of the runtime issues described in this post.</p>
+<h4 id="overall">Overall</h4>
+<p>As a final thought, the usefulness of compilers such as those for .NET, JAVA, C++ etc. are obviously that they compile down to MSIL or bytecode that isn't readable and can't be coded in by hand, or to different assembly languages based on the target operating system. JavaScript is already a readable language and it is already standardised.</p>
+<p>TypeScript is nice to use, once you get passed the initial settling in, but it is difficult to say whether or not it is worth it in terms of learning the syntax and quirks of constructs such as TypeScript classes. When it comes to refactoring <em>traditional</em> JavaScript (pre-ES6), it is probably best to view TypeScript as more of a JavaScript code analysis tool with a few preprocessor directives thrown in for specifying types when they aren't initialised inline.</p>
+<p>On the other hand, it is worth noting that there is significant overlap between TypeScript syntax and that of ECMAScript 6 (the latest JavaScript specification), and maybe even future ECMAScript standards (<a href="https://hackernoon.com/is-typescript-worth-the-effort-1b3314e89cc#fe4b">speculatively</a>), making the effort likely to be worthwhile in the long run.</p>
+
+        </div>
+
+        <div id="disqus_thread"></div>
+        <script>
+            var disqus_config = function () {
+                this.page.url = 'https://blogs.conceptfirst.com/2017/05/02/Typescript.html';
+                this.page.identifier = 'https://blogs.conceptfirst.com/2022/09/12/2017/05/02/Typescript.html';
+            };
+
+            (function () {
+                var d = document, s = d.createElement('script');
+                s.src = 'https://conceptfirst.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+    </article>
+</div>
+
+
+
+
+        </main>
+
+        <footer class="site-footer">
+            <div class="wrapper">
+            <h2 class="footer-heading">Concept First Blog</h2>
+                <div class="footer-col-wrapper">
+                    <div class="footer-col footer-col-1">
+                        <ul class="contact-list">
+                        <li>Concept First Blog</li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-2">
+                        <ul class="social-media-list">
+                            <li>
+                                <a href="https://github.com/conceptfirst">
+                                    <span class="icon icon--github">
+                                        <svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z" /></svg>
+                                    </span><span class="username">conceptfirst</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-3">
+                        <p>IT consultancy, web development, data analysis and application development</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GIS</title>
+  <link rel="stylesheet" href="/files/main.css">
+  <link rel="alternate" type="application/rss+xml" title="Concept First Blog" href="feed.xml">
+
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-774963-2', 'auto');
+        ga('send', 'pageview');
+    </script>
+  
+</head>
+    <body>
+        <header class="site-header" role="banner">
+            <div class="wrapper">
+            <a class="site-title" href="/">Concept First Blog</a>
+                <nav class="site-nav">
+                    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+                    <label for="nav-trigger">
+                        <span class="menu-icon">
+                            <svg viewBox="0 0 18 15" width="18px" height="15px">
+                                <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" />
+                                <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" />
+                                <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" />
+                            </svg>
+                        </span>
+                    </label>
+
+                    <div class="trigger">
+                        <a class="page-link" href="/about/">About</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="page-content" aria-label="Content">
+
+            
+<div class="wrapper">
+    <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+        <header class="post-header">
+            <h1 class="post-title" itemprop="name headline">GIS</h1>
+            <p class="post-meta">
+                <time datetime="23/05/2006 11:14:00" itemprop="datePublished">May 23, 2006</time>
+                • <span itemprop="author" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">David Glassborow</span></span>
+            </p>
+        </header>
+
+        <div class="post-content" itemprop="articleBody">
+            <p>I'm writing this posting for two reasons. Firstly my company is currently engaged in a project with a client about getting
+more of their data onto their intranet based mapping tool, so I've spent the last 3 days researching and getting back up to speed
+on the industry.</p>
+<p>Secondly my brother has just got a new job working as sales manager for a company providing GIS data, so I thought an introduction
+and overview of the subject might be of use to him. Apologises if I get too technical Mike.</p>
+<!--more-->
+<h1 id="geographic-information-systems">Geographic Information Systems</h1>
+<p>A GIS is a system the stores and displays maps electronically. Its a smart tool that helps us understand the world around us better,
+to get our work done more efficiently.
+I've been interested in GIS since one of my first jobs where I was in charge of writing a routing and optimising algorithm for
+solving a variant of the <a href="http://en.wikipedia.org/wiki/Traveling_salesman_problem">Travelling Sales Problem</a>. Essentially our product was in charge of figuring out routes for workman
+to get their work down in the most efficient way possible, and send them routes on their mobile devices so they didn't get lost.
+It was really interesting work, we worked with providers of GIS data about the road network, and with the UK government for access
+to electronic versions of their maps.</p>
+<p>I think part of my interest also comes from travelling. When I first go to a new city, I'm always keen to find a map, to give
+me a feel of the layout. I always choose Lonely Planet over Rough Guide, because their maps are better. It was very strange when I
+was in Guyana in the Jungle, the only maps we had were from satellite images taken over 10 years ago, at a very low resolution.
+Most of the time we only have a vague idea of where we were at any time. Rivercourses flood, move, the tree cover prevents
+identification of key features. It made me realise how much we take accurate maps for granted.</p>
+<p>GIS is everywhere at the moment. Tom Tom are advertising their navigation products on TV. Google Local can show me a map of my local
+city in the time it takes to click a mouse, and Google Earth can let me zoom in from space to see my parents house, the roof of my
+dad's land rover. NASA can let me look at the surface of Venus.</p>
+<h2 id="raster-and-vector">Raster and Vector</h2>
+<p>The most important division in GIS to understand is the different between Raster and Vector information. Raster information is
+pictures, its pixels that show us what our cities look like from space. Its the images that digital cameras give us. Its resolution
+dependant. Vector information is mathematical in nature, its descriptions of things in terms of lines, circles, polygons.</p>
+<p>Google earth is predominately raster based, as you zoom in loads in images with more detail.</p>
+<p><img src="/files/GoogleEarth.JPG" alt="Google Earth" /></p>
+<p>Google Local is vector based, it shows you your local high street as a series of straight lines, it shows you the nearby river as a polygon.</p>
+<p><img src="/files/GoogleLocal.JPG" alt="Google Local" /></p>
+<p>The real power comes when we use raster and vector together. When we turn on the country boundaries in NASA's <a href="http://worldwind.arc.nasa.gov/">World Wind</a>
+we seem them overlaid over the raster images of earth:</p>
+<p><img src="/files/NasaWindwalker.JPG" alt="WindWalker" /></p>
+<p>Raster information is an approximation to the real world, its pictures of the world. Vectors are mathematical, they are 'idealised'
+versions of the world. The mathematical nature of vectors allow us to use maths to answer questions like: &quot;How many roads are there
+within 2 miles of the river ?&quot;. Or this more relevant example &quot;Show me all the pubs within 2 miles of where I live&quot; in Mappoint 2004:</p>
+<p><img src="/files/Mappoint.JPG" alt="Mappoint" /></p>
+<p>Raster examples:</p>
+<ul>
+<li>Pictures of landscapes, from space or from aircraft</li>
+<li>Pictures of clouds</li>
+<li>Infrared pictures showing heat usage</li>
+</ul>
+<p>Vector examples:</p>
+<ul>
+<li>Countries, Regions, Postal boundaries</li>
+<li>Streets, Motorways, Garages</li>
+<li>Wind speeds, wave heights</li>
+</ul>
+<h1 id="organisations">Organisations</h1>
+<h2 id="opengis">OpenGIS</h2>
+<p>The main organisation dealing with GIS standards appears to be the &quot;Open Geospatial Consortium&quot;, a group of 300 organisation
+worldwide. It has prepared various specifications for open standards:</p>
+<ul>
+<li>GML: A geographical data format based on XML</li>
+<li>Simple Features (SFSQL): A standard way to store data within standard SQL Databases</li>
+<li>Various web interfaces for providing both vector and raster information in agreed formats (GML)</li>
+</ul>
+<h2 id="companies">Companies</h2>
+<p>The leaders in the industry for GIS software seem to be <a href="http://www.esri.com/">ESRI</a>, <a href="http://en.wikipedia.org/wiki/MapInfo">Mapinfo</a> and <a href="http://intergraph.com/">Integraph</a>.
+The two largest data providers are <a href="http://www.navteq.com/">NAVTEQ</a>, used by Google maps, and <a href="http://www.teleatlas.com/">TeleAtlas</a>.</p>
+<h1 id="representation">Representation</h1>
+<p>An important thing to understand in GIS is that there is no universal 'best' representation for coordinates on Earth. The earth
+is not an exact sphere, its not flat, so various different schemes have been invented. Which is used is, as ever, is dependant
+on what your trying to achieve.</p>
+<h2 id="longitude-and-latitude">Longitude and Latitude</h2>
+<p>The standard way of representing points on the earth is obviously using long and lat. Longitude is the lines from the North Pole to
+the South Pole, with 0 degrees going through Greenwich, London. Latitude is the lines around the 'waist' of the earth, with 0 degrees
+at the equator, + 90 degrees being the north pole.
+<img src="/files/LongLat.png" alt="LongLat" /></p>
+<p>Longitude and Latitude are measured against a known <em>datum</em>. This is the reference model used, i.e. the mathematical figures used
+for calculating the best fit shape of the Earth. The most common currently in use is the WGS84 datum (WGS stands for 'World
+Geodetic System'). It is possible to convert from one datum to another, but this can require some quite complex mathematics.</p>
+<h2 id="gps">GPS</h2>
+<p>Global Positioning System is where a lot of GIS data is coming from. It is a set of satellites flying through space, transmitting
+signals allowing the calculation of very accurate position. GPS figures are long/lat figures based on the WGS84 datum.</p>
+<h2 id="grid-references">Grid References</h2>
+<p>Rather than capture coordinates as spherical coordinates (like long/lat), coordinates can be stored as a reference on a grid.
+As the Earth is obviously not flat, this is an approximation, but can be easier to deal with when mapping smaller areas. The UK uses
+a grid reference system for its 'Ordnance Survey' (OS) maps. In this coordinate system, points are measured in Eastings and Northings.
+This grid is based on a different datum, OSGB36, based on a slightly different ellipsoid representation of the Earth. The 'Helmert'
+datum transformation can be used to convert to WGS84, but with an approximate error of 7m (depending on location). The image below
+shows where the eastings and northings are measured from. The letters in the grids allow another way of specifying location, called
+<em>National Grid References</em> (<a href="http://en.wikipedia.org/wiki/British_national_grid_reference_system">NGR</a>s), with further digits specifying easting and northing offsets within each 100km grid square.
+More digits give more accuracy or specify a smaller area. An example of an NGR is 'NN 166 712'. This gives a 100m square area in
+Scotland. The good thing about NGS's is that they are useful shorthand to give approximate position, or for capturing an 'area'.</p>
+<p><img src="/files/OSGridReference.JPG" alt="OS GridRef" /></p>
+<p>The UK government can provide digital maps of the country in GML, with currently 440 million distinct features taking up 660
+Gigabytes of storage. The data is called <a href="http://en.wikipedia.org/wiki/OS_MasterMap">OS Mastermap</a></p>
+<h1 id="formats">Formats</h1>
+<h2 id="gml-and-svg">GML and SVG</h2>
+<p><a href="http://en.wikipedia.org/wiki/Geography_Markup_Language">GML</a> and <a href="http://en.wikipedia.org/wiki/Svg">SVG</a> are both XML based standards that are used within GIS. GML stands for <em>Geography Markup Language</em>, and
+is a format designed to hold geographical features, geometry (vector), raster information, as well as units, coordinate
+representation systems, and map styles.</p>
+<p>SVG is actually just a generic format for holding vector graphic information, and stands for <em>Scalable Vector Graphics</em>.
+Its like an Open Standard version of Adobe's Flash files, and supports both raster and vector information of any kind, not just
+geographic info.
+The customer we are doing the GIS work for currently uses SVG for their display of GIS data inside a web browser, using
+Adobe's free SVG plugin for Internet Explorer (note: firefox supports a subset of SVG natively now). SVG has well defined Javascript
+bindings so its easy to create interactive displays.</p>
+<p>To me GML seems a better storage format and SVG a better display format.</p>
+<h2 id="other">Other</h2>
+<p>There are various file formats in use within the industry. Although the OpenGIS is pushing GML, most data seems to be available
+in either ESRI's shape format, or Mapinfo's standard file format. Both are proprietary, but easy to parse formats that most tools
+support.</p>
+<h2 id="databases">Databases</h2>
+<p>There seems to be a big push to moving 'spatial' capabilities into databases at the moment. This makes sense as really geometry
+is just another attribute of an entity. Moving the geometry into database tables allows this data to be kept alongside other
+attributes, as well as allowing databases to carry out geospatial queries.</p>
+<p>The market leader in geospatial databases is <a href="http://www.oracle.com/">Oracle</a>. All versions of their database support what they call <em>Locator</em> features.
+This allows the storages of complex vectors into tables, as well as support for complex queries (e.g. find me all objects that
+lie within the boundary of this polygon, find me there nearest 5 customers to our store). The top end product also has <em>spatial</em>
+features that allow very complex geometric calculations to be done. The nice thing is that the free Oracle Express (10g at the
+moment) supports the locator features. IBM's DB2 seems to have some sort of spatial <em>extender</em> but I couldn't find any information
+on the web about it.</p>
+<p>Some of the GIS software companies provide software to help with database storage, like ESRI's ArcSDE, but these are just 'layers'
+that sit between software and the database, and are not open formats, tying you into using a particular vendor.</p>
+<p>Two of the open source database engines have recently added spatial features to their engines. Postgres SQL has the addon
+<a href="http://postgis.refractions.net/">PostGIS</a> that supports the SFSQL specification mentioned above (as does Oracle). <a href="http://dev.mysql.com/doc/refman/5.1/en/spatial-extensions.html">MySQL</a> also has spatial extensions based
+on the SFSQL spec, but the current version (5.0) seems only to support planar (flat) and not spherical coordinate systems. The
+mathematics used for distances, areas, etc. are different for planar and spherical representations.</p>
+<p>It was hoped that Microsoft SQL Server would add some spatial features to the new 2005 release, but this was not the case. There
+is however an interesting <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnsql90/html/TblValFuncSQL.asp">MSDN article</a> showing how spatial features can be added to SQL Server, but this does not support
+open standards (surprise surprise).</p>
+<h2 id="spatial-indexes">Spatial Indexes</h2>
+<p>When reading about GIS formats, one of the key issues is how the formats are 'indexed' to make retrieval efficient. Oracle uses
+<em>Helical Hyperspatial Codes</em> (HHCodes), a data structure developed by the Canadian Hydrograph office. Despite the fancy name,
+it seems to be a binary tree, dividing each dimension in order. Its designed to support as many dimensions as desired, to an
+arbitrary level of detail. The <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnsql90/html/TblValFuncSQL.asp">MSDN article</a> discusses the use of <em>Hierarchical Triangular Meshes</em>, which is a technique of
+covering a globe with a mesh of subdivided triangles. These seems work well for spherical mapping, but does not seem as general
+case as HHCodes. PostGIS and MySQL seems to use extensions of standard database indexes, rather than specific spatial indexing.</p>
+<h1 id="summary">Summary</h1>
+<p>The GIS industry is becoming more and more important, as developers I can see us having to deal with spatial information more and
+more. If i get time I'll try and write an article on how to access SFSQL spatial data from within Delphi. For more information
+see <a href="http://en.wikipedia.org/wiki/Category:Geographic_Information_Systems">Wikipedia</a>'s entry.</p>
+<h1 id="comments-originally-on-blogger.com">Comments (originally on blogger.com)</h1>
+<p>Paul Ramsey said...</p>
+<blockquote>
+<p>PostGIS and MySQL use R-Tree indexes, which are rather specifically for spatial data (well, any data type which can be
+decomposed to a range rectangle). So does Oracle Spatial, for that matter. Space-filling curves, which map multi-dimensional
+data to something sortable into a B-Tree are ways of leveraging non-spatial database technology to be more useful for
+spatial data. Space-filling techniques tend not to be as balanced as R-Trees, however. The hierarchical grid is the final
+trick, and can be quite performant, but needs to be carefully tuned to the characteristics of the data, unlike R-Trees which
+automagically work for data of uneven scales.</p>
+</blockquote>
+
+        </div>
+
+        <div id="disqus_thread"></div>
+        <script>
+            var disqus_config = function () {
+                this.page.url = 'https://blogs.conceptfirst.com/2006/05/23/GIS.html';
+                this.page.identifier = 'https://blogs.conceptfirst.com/2022/09/12/2006/05/23/GIS.html';
+            };
+
+            (function () {
+                var d = document, s = d.createElement('script');
+                s.src = 'https://conceptfirst.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+    </article>
+</div>
+
+
+
+
+        </main>
+
+        <footer class="site-footer">
+            <div class="wrapper">
+            <h2 class="footer-heading">Concept First Blog</h2>
+                <div class="footer-col-wrapper">
+                    <div class="footer-col footer-col-1">
+                        <ul class="contact-list">
+                        <li>Concept First Blog</li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-2">
+                        <ul class="social-media-list">
+                            <li>
+                                <a href="https://github.com/conceptfirst">
+                                    <span class="icon icon--github">
+                                        <svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z" /></svg>
+                                    </span><span class="username">conceptfirst</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-3">
+                        <p>IT consultancy, web development, data analysis and application development</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>

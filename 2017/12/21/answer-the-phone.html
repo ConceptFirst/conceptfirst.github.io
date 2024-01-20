@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Answering the phone, functionally</title>
+  <link rel="stylesheet" href="/files/main.css">
+  <link rel="alternate" type="application/rss+xml" title="Concept First Blog" href="feed.xml">
+
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-774963-2', 'auto');
+        ga('send', 'pageview');
+    </script>
+  
+</head>
+    <body>
+        <header class="site-header" role="banner">
+            <div class="wrapper">
+            <a class="site-title" href="/">Concept First Blog</a>
+                <nav class="site-nav">
+                    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+                    <label for="nav-trigger">
+                        <span class="menu-icon">
+                            <svg viewBox="0 0 18 15" width="18px" height="15px">
+                                <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" />
+                                <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" />
+                                <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" />
+                            </svg>
+                        </span>
+                    </label>
+
+                    <div class="trigger">
+                        <a class="page-link" href="/about/">About</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="page-content" aria-label="Content">
+
+            
+<div class="wrapper">
+    <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+        <header class="post-header">
+            <h1 class="post-title" itemprop="name headline">Answering the phone, functionally</h1>
+            <p class="post-meta">
+                <time datetime="21/12/2017 06:30:00" itemprop="datePublished">Dec 21, 2017</time>
+                • <span itemprop="author" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">David</span></span>
+            </p>
+        </header>
+
+        <div class="post-content" itemprop="articleBody">
+            <h1 id="f-workflow-for-working-with-twilio">F# workflow for working with Twilio</h1>
+<p>This post is part of the <a href="https://sergeytihon.com/2017/10/22/f-advent-calendar-in-english-2017/">2017 F# Advent calendar</a>.</p>
+<p>Lammy the elf is frustrated.  He's constantly interupted by the phone when trying to get on with his work,
+and Santa isn't the most tolerent this time of year, there is a <strong>lot</strong> to be done.</p>
+<p><img src="/files/elf.jpg" alt="happy elf" /></p>
+<p>As well as being a semi-magical creature and full time toy maker, Lammy likes to code in his spare time.
+He's been using C# for years, and in the past has used <a href="https://www.twilio.com">Twilio</a>.</p>
+<h2 id="a-brief-introduction-to-twilio">A brief introduction to Twilio</h2>
+<p>Twilio is a hosted service where you rent a telephone number from them, and when somebody calls (or txts) the number, the Twilio servers
+call an API you
+provide, and the Twilio software will do what you tell it to do (e.g. hangup, forward to another number, take a message, etc).</p>
+<ul>
+<li><a href="https://www.twilio.com/learn/twilio-101/what-is-twilio">What is Twilio and How Does the Twilio API Work?</a></li>
+</ul>
+<p>Basically a phone number is setup with Twilio. When that number is called, the Twilio server calls a configured API via an HTTP POST
+with various form variables set like the Call ID, which number is calling, etc.</p>
+<p>The API returns TwiML (which is their XML based language for controlling the call) to tell the server what to do, and it carries it out.</p>
+<p>For example, the following sequence shows a new call to a number, followed by an API requesting a message is said, 2 digits are captured,
+and then the call is hung up:</p>
+<p><img src="/files/sequence.svg" alt="sequence" /></p>
+<p>The say and gather TwiML looks like:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#808080;">&lt;</span><span style="color:#E6E6E6;">Response</span><span style="color:#808080;">&gt;</span>
+  <span style="color:#808080;">&lt;</span><span style="color:#E6E6E6;">Say</span><span style="color:#808080;">&gt;</span>Please type in your pin number to proceed<span style="color:#808080;">&lt;/</span><span style="color:#E6E6E6;">Say</span><span style="color:#808080;">&gt;</span>
+  <span style="color:#808080;">&lt;</span><span style="color:#E6E6E6;">Gather</span> <span style="color:#92CAF4;">input</span><span style="color:#808080;">=</span><span style="color:#569CD6;">&quot;</span><span style="color:#569CD6;">dtmf</span><span style="color:#569CD6;">&quot;</span> <span style="color:#92CAF4;">numDigits</span><span style="color:#808080;">=</span><span style="color:#569CD6;">&quot;</span><span style="color:#569CD6;">2</span><span style="color:#569CD6;">&quot;</span><span style="color:#808080;">&gt;</span><span style="color:#808080;">&lt;/</span><span style="color:#E6E6E6;">Gather</span><span style="color:#808080;">&gt;</span>
+<span style="color:#808080;">&lt;/</span><span style="color:#E6E6E6;">Response</span><span style="color:#808080;">&gt;</span>
+</pre></div>
+<p>This is how a number is configured on the Twilio website, a webhook is configured to make a POST to a given URL.</p>
+<p><img src="/files/api_setup.png" alt="config" /></p>
+<p>Twilio can do lots of other things as well, including outbound calls, conferencing, calls from the browser and mobile apps, but
+Lammy has decided he just wants to implement something simple to save himself time.</p>
+<p><img src="/files/twilio.png" alt="twilio_summary" /></p>
+<h2 id="the-challenge">The challenge</h2>
+<p>Lammy decides a Twilio phone system can automate answering the phone, leaving him more time to build toys for the world's children.</p>
+<p>He sits down with an <a href="http://flowchart.js.org/">online  tool</a> and quickly whips up a flowchart for the flow he wants
+to implement.  He ends up with 3 different things he wants to happen during a call, depending on when the call is, and what the caller would like:</p>
+<ol>
+<li>Hangup after reading a message that the North Pole is shut.</li>
+<li>Take a message and email to the customer service team for them to followup at a later date.</li>
+<li>Forward the call to one of the 3 customer service departments (outsourced), run out of the South Pole.</li>
+</ol>
+<p><img src="/files/flow.png" alt="flowchart" /></p>
+<h2 id="workflows">Workflows</h2>
+<p>Last time Lammy worked with Twilio, he used C#. It worked but he ended up with lots of different functions, and different
+API endpoints, and he struggled to understand the logic a week later when reading the code.</p>
+<p>An example of some old C# code is below, with lots of different actions in an MVC site, the logic of the call is unclear:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+
+<span style="color:#569CD6;">public</span> IActionResult Chosen_Department(<span style="color:#569CD6;">string</span> Digits)
+{
+    <span style="color:#569CD6;">if</span> (Digits == <span style="color:#D69D85;">&quot;1&quot;</span> || Digits == <span style="color:#D69D85;">&quot;2&quot;</span> || Digits == <span style="color:#D69D85;">&quot;3&quot;</span>)
+        <span style="color:#569CD6;">return</span> Logic.TakeMessageAndEmail().xml();
+    <span style="color:#569CD6;">if</span> (Digits == <span style="color:#D69D85;">&quot;6&quot;</span>)
+        <span style="color:#569CD6;">return</span> Logic.GetPIN().xml();
+    <span style="color:#57A64A;">// Anything else go back to start</span>
+    <span style="color:#569CD6;">return</span> Logic.GobackToStart().xml();
+}
+
+<span style="color:#569CD6;">public</span> IActionResult Pin_entered(<span style="color:#569CD6;">string</span> Digits)
+{
+    <span style="color:#569CD6;">if</span> (Digits == <span style="color:#D69D85;">&quot;321&quot;</span>)
+        <span style="color:#569CD6;">return</span> Logic.CallConference( callbackForConference() ).xml();
+    <span style="color:#569CD6;">return</span> Logic.GobackToStart().xml();
+}
+
+<span style="color:#569CD6;">public</span> IActionResult Chosen_Person(<span style="color:#569CD6;">string</span> Digits)
+{
+    <span style="color:#569CD6;">switch</span> (Digits)
+    {
+        <span style="color:#569CD6;">case</span> <span style="color:#D69D85;">&quot;1&quot;</span>: <span style="color:#569CD6;">return</span> Logic.PhoneElf1().xml();
+        <span style="color:#569CD6;">case</span> <span style="color:#D69D85;">&quot;2&quot;</span>: <span style="color:#569CD6;">return</span> Logic.PhoneElf2().xml();
+        <span style="color:#569CD6;">default</span>:
+                  <span style="color:#569CD6;">return</span> Logic.ListPeople().xml();
+    }
+}
+
+<span style="color:#57A64A;">// With an example of the logic calls being:</span>
+
+<span style="color:#569CD6;">public</span> <span style="color:#569CD6;">static</span> TwiML ListPeople() =&gt; 
+    <span style="color:#569CD6;">new</span> VoiceResponse().Append(
+        <span style="color:#569CD6;">new</span> Gather(numDigits: <span style="color:#B5CEA8;">1</span>, action: action(<span style="color:#D69D85;">&quot;chosen_person&quot;</span>), method: HttpMethod.Get).
+            Play(sample(<span style="color:#D69D85;">&quot;TalkToElf1.wav&quot;</span>)).
+            Play(sample(<span style="color:#D69D85;">&quot;TalkToElf2.wav&quot;</span>))).
+        Redirect(action(<span style="color:#D69D85;">&quot;new&quot;</span>), method: HttpMethod.Get);
+</pre></div>
+<p>Although he still enjoys C#, he had become increasingly interested in F# over the last couple of years. He's been faithfully
+reading <a href="https://fsharpforfunandprofit.com">F# for fun and profit</a>, and in particular he has recently been reading about an
+advanced F# feature called <a href="https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/computation-expressions">Computation Expressions</a>.</p>
+<p>He knows from a local talk at the NPHUG (North Pole Haskell Usergroup) that <code>Computation Expressions</code> implement syntactic
+sugar for <code>Monoids</code>, <code>Monads</code>, <code>MonadPlus</code> and maybe a couple of others, but he doesn't really know what that means. He does
+know that its allows him to interupt the normal flow of statments, so he quickly reads the <a href="https://fsharpforfunandprofit.com/series/computation-expressions.html">Computation Expression Series</a>.</p>
+<h2 id="starting-off">Starting off</h2>
+<p>His first step is to model what he want's the Twilio server to do for him. He quickly defines a union type:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#608B4E;">///</span><span style="color:#608B4E;"> Represents what we will tell the Twilio phone system to do</span>
+<span style="color:#569CD6;">type</span> PhoneCommand =
+<span style="color:#608B4E;">///</span><span style="color:#608B4E;"> Connect the caller to a given phone queue</span>
+| ConnectToQueue <span style="color:#569CD6;">of</span> queueName:string
+<span style="color:#608B4E;">///</span><span style="color:#608B4E;"> Say the message, and then hangup</span>
+| Hangup <span style="color:#569CD6;">of</span> msg:string
+<span style="color:#608B4E;">///</span><span style="color:#608B4E;"> Say the message, then record the caller&#39;s message</span>
+| TakeMessage <span style="color:#569CD6;">of</span> msg:string
+<span style="color:#608B4E;">///</span><span style="color:#608B4E;"> Say the message, then wait for a user to input a given number of key presses</span>
+| WaitForKeypresses <span style="color:#569CD6;">of</span> msg:string * numberDigits:int
+</pre></div>
+<p>The next step is to think how to model the flow of information.
+The easiest situation is when a single message is returned and then the call is complete.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">type</span> CallHandlingProgram =
+| Complete <span style="color:#569CD6;">of</span> result:PhoneCommand
+</pre></div>
+<p>Given this, he builds a very basic computation expression (or workflow as he prefers to call it), that
+can return a single message to the Twilio call. It has a single definition, Return, which describes how to
+wrap up the return.  In this case its is wrapped in the <code>CallHandlingProgram.Complete</code> case.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">type</span> CallBuilder() =
+    <span style="color:#57A64A;">// No Zero method - we must return something</span>
+    <span style="color:#569CD6;">member</span> this.Return(a:PhoneCommand) = Complete a
+<span style="color:#569CD6;">let</span> call = <span style="color:#569CD6;">new</span> CallBuilder()
+</pre></div>
+<p>With this in place, the first couple of steps can be written.
+Note at this stage, he is just returning the PhoneCommand cases defined above. Later they will be converted into XML.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">let</span> takeCall fromNumber toNumber (now:System.DateTime) =
+    call {
+        <span style="color:#57A64A;">// 1. If the call is on Christmas Eve or later, leave a message saying we are busy</span>
+        <span style="color:#569CD6;">if</span> now.DayOfYear &gt;= 358 <span style="color:#569CD6;">then</span>        <span style="color:#57A64A;">// 358 is the 24th of December</span>
+            <span style="color:#569CD6;">return</span> Hangup <span style="color:#D69D85;">&quot;I&#39;m sorry, we are now shut for the rest of year, happy holidays !&quot;</span>
+        <span style="color:#569CD6;">else</span>
+            <span style="color:#57A64A;">// 2. If the call is out of hours, request a message is left and email it to ourselves</span>
+            <span style="color:#57A64A;">// Elves are 9 to 5 workers</span>
+            <span style="color:#569CD6;">if</span> now.Hour &lt;= 8 || now.Hour &gt;= 17 <span style="color:#569CD6;">then</span>
+                <span style="color:#569CD6;">return</span> TakeMessage <span style="color:#D69D85;">&quot;I&#39;m sorry, we are closed for the day, please leave a message and we&#39;ll get back to you asap&quot;</span>
+            <span style="color:#569CD6;">else</span>
+                <span style="color:#569CD6;">return</span> Hangup <span style="color:#D69D85;">&quot;Sorry, the rest of the program hasn&#39;t been written yet&quot;</span>
+    }
+</pre></div>
+<p>Lammy is happy with this, he can write a nice DSL that describes what he wants to do, but it hasn't given him anything he couldn't
+do in C#.  What about the interaction ? how to get the user to press keys, and his workflow get called back to continue on ?</p>
+<p>He realises he needs to extend his concept of a CallHandlingProgram.</p>
+<p>He knows that ultimately Twilio will be calling back over HTTP, so the input is going to be some sort of string.
+So he represents the callback by extending the <code>CallHandlingProgram</code> - adding another case, which is where the
+workflow is in progress, waiting for more information from the Twilio server.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">type</span> CallHandlingProgram =
+| Complete <span style="color:#569CD6;">of</span> result:PhoneCommand
+| InProgress <span style="color:#569CD6;">of</span> result:PhoneCommand * nextStep: (string <span style="color:#569CD6;">-&gt;</span> CallHandlingProgram)
+</pre></div>
+<p>The <code>InProgress</code> case captures the command to send back to the server, <strong>and</strong> the function to carry on with once an answer arrives.</p>
+<h2 id="using-bind-to-handle-inputs">Using bind to handle inputs</h2>
+<p>The <code>Bind</code> call allows the behaviour of the workflow to be altered. Given:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+    <span style="color:#569CD6;">let!</span> something = producer()
+    ...
+</pre></div>
+<p>The compiler will convert it into a call something like</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+    CallBuilder.Bind( producer(), <span style="color:#569CD6;">fun</span> something <span style="color:#569CD6;">-&gt;</span> ... )
+</pre></div>
+<p>This gives Lammy the opportunity to suspend the computation, send the response to Twilio, and run it later when Twilio calls back.
+He creates a new type to capture that more information is needed.  The <code>bind</code> uses this to wrap the response now, and the future callback
+into the new InProgress case. He adds a helper to wrap the <code>WaitForKeypresses</code> into <code>NeedsKey</code>.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+
+<span style="color:#608B4E;">///</span><span style="color:#608B4E;"> Use internally for any step where we need to wait for a string</span>
+<span style="color:#569CD6;">type</span> Internal =
+| NeedKey <span style="color:#569CD6;">of</span> PhoneCommand
+
+<span style="color:#569CD6;">type</span> CallBuilder() =
+    <span style="color:#57A64A;">// No zero - we must return something</span>
+    <span style="color:#569CD6;">member</span> this.Return(a:PhoneCommand) = Complete a
+    <span style="color:#569CD6;">member</span> this.Bind(NeedKey(x),f) =
+            InProgress(x, <span style="color:#569CD6;">fun</span> x <span style="color:#569CD6;">-&gt;</span> f(x) )
+
+<span style="color:#569CD6;">let</span> waitForKeypress msg num = 
+    WaitForKeypresses(msg,num) |&gt; NeedKey
+
+</pre></div>
+<p>This is all that is needed to write code like:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+call {   
+        <span style="color:#569CD6;">let!</span> keyPress = waitForKeypress <span style="color:#D69D85;">&quot;Please press 1 to discuss naughty lists, press 2 to discuss a reindeer malfunction, press 3 for any other enquires&quot;</span> 1
+        <span style="color:#569CD6;">match</span> keyPress <span style="color:#569CD6;">with</span>
+        | <span style="color:#D69D85;">&quot;1&quot;</span> <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> ConnectToQueue <span style="color:#D69D85;">&quot;Naughty children&quot;</span>
+        | <span style="color:#D69D85;">&quot;2&quot;</span> <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> ConnectToQueue <span style="color:#D69D85;">&quot;Naughty raindeer&quot;</span>
+        | <span style="color:#D69D85;">&quot;3&quot;</span> <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> ConnectToQueue <span style="color:#D69D85;">&quot;Account enquires&quot;</span>
+}
+</pre></div>
+<p>This will define a call program that returns WaitForKeypress message back to Twilio, and wrap up the match code in a future
+function, all put into a <code>InProgress</code> wrapper.</p>
+<p>There is one last simple step required. The flowchart needs to repeatadly read a message to the user and wait for a key press, so looping is needed.
+In a functional program, this often means recursion. By adding a <code>ReturnFrom</code> method to the builder, the <code>call</code> workflow can call itself using <code>return!</code>:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">type</span> CallBuilder() =
+    <span style="color:#57A64A;">// No zero - we must return something</span>
+    <span style="color:#569CD6;">member</span> this.Return(a:PhoneCommand) = Complete a
+    <span style="color:#569CD6;">member</span> this.ReturnFrom(a) = a
+    <span style="color:#569CD6;">member</span> this.Bind(NeedKey(x),f) =
+            InProgress(x, <span style="color:#569CD6;">fun</span> x <span style="color:#569CD6;">-&gt;</span> f(x) )
+
+<span style="color:#569CD6;">let</span> listQueuesAndWaitForResponse() =
+    <span style="color:#57A64A;">// We make this recursive so we can try a number of times before bugging out</span>
+    <span style="color:#569CD6;">let</span> <span style="color:#569CD6;">rec</span> handleQueues retries = call {   
+        <span style="color:#569CD6;">let!</span> keyPress = waitForKeypress <span style="color:#D69D85;">&quot;Please press 1 to discuss naughty lists, press 2 to discuss a reindeer malfunction, press 3 for any other enquires&quot;</span> 1
+        <span style="color:#569CD6;">match</span> keyPress <span style="color:#569CD6;">with</span>
+        | <span style="color:#D69D85;">&quot;1&quot;</span> <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> ConnectToQueue <span style="color:#D69D85;">&quot;Naughty children&quot;</span>
+        | <span style="color:#D69D85;">&quot;2&quot;</span> <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> ConnectToQueue <span style="color:#D69D85;">&quot;Naughty raindeer&quot;</span>
+        | <span style="color:#D69D85;">&quot;3&quot;</span> <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> ConnectToQueue <span style="color:#D69D85;">&quot;Account enquires&quot;</span>
+        | _   <span style="color:#569CD6;">-&gt;</span> 
+            <span style="color:#569CD6;">match</span> retries <span style="color:#569CD6;">with</span>            
+            | i <span style="color:#569CD6;">when</span> i &gt;= 3 <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> Hangup <span style="color:#D69D85;">&quot;Sorry, key not recognised&quot;</span>
+            | _             <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return!</span> handleQueues (retries+1)
+    }
+    handleQueues 0
+</pre></div>
+<p>Note the addition of a counter so the code can give up after a certain number of times asking the caller to press a key.</p>
+<h2 id="interpreting-the-callhandlingprogram">Interpreting the CallHandlingProgram</h2>
+<p>The <code>call</code> computation expression will now build everything that is needed, a recursive <code>CallHandlingProgram</code> that describes
+the process of handling a call. What is needed now is to <em>run</em> his final call handling program:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">let</span> listQueuesAndWaitForResponse() =
+    <span style="color:#57A64A;">// We make this recursive so we can try a number of times before bugging out</span>
+    <span style="color:#569CD6;">let</span> <span style="color:#569CD6;">rec</span> handleQueues retries = call {   
+        <span style="color:#569CD6;">let!</span> keyPress = waitForKeypress <span style="color:#D69D85;">&quot;Please press 1 to discuss naughty lists, press 2 to discuss a reindeer malfunction, press 3 for any other enquires&quot;</span> 1
+        <span style="color:#569CD6;">match</span> keyPress <span style="color:#569CD6;">with</span>
+        | <span style="color:#D69D85;">&quot;1&quot;</span> <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> ConnectToQueue <span style="color:#D69D85;">&quot;Naughty children&quot;</span>
+        | <span style="color:#D69D85;">&quot;2&quot;</span> <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> ConnectToQueue <span style="color:#D69D85;">&quot;Naughty raindeer&quot;</span>
+        | <span style="color:#D69D85;">&quot;3&quot;</span> <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> ConnectToQueue <span style="color:#D69D85;">&quot;Account enquires&quot;</span>
+        | _   <span style="color:#569CD6;">-&gt;</span> 
+            <span style="color:#569CD6;">match</span> retries <span style="color:#569CD6;">with</span>            
+            | i <span style="color:#569CD6;">when</span> i &gt;= 3 <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> Hangup <span style="color:#D69D85;">&quot;Sorry, key not recognised&quot;</span>
+            | _             <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return!</span> handleQueues (retries+1)
+    }
+    handleQueues 0
+
+
+<span style="color:#569CD6;">let</span> takeCall fromNumber toNumber (now:System.DateTime) =
+    call {
+        <span style="color:#57A64A;">// 1. If the call is on Christmas Eve or later, leave a message saying we are busy</span>
+        <span style="color:#569CD6;">if</span> now.DayOfYear &gt;= 358 <span style="color:#569CD6;">then</span>        <span style="color:#57A64A;">// 358 is the 24th of December</span>
+            <span style="color:#569CD6;">return</span> Hangup <span style="color:#D69D85;">&quot;I&#39;m sorry, we are now shut for the rest of year, happy holidays !&quot;</span>
+        <span style="color:#569CD6;">else</span>
+
+            <span style="color:#57A64A;">// 2. If the call is out of hours, request a message is left and email it to ourselves</span>
+            <span style="color:#57A64A;">// Elves are 9 to 5 workers</span>
+            <span style="color:#569CD6;">if</span> now.Hour &lt;= 8 || now.Hour &gt;= 17 <span style="color:#569CD6;">then</span>
+                <span style="color:#569CD6;">return</span> TakeMessage <span style="color:#D69D85;">&quot;I&#39;m sorry, we are closed for the day, please leave a message and we&#39;ll get back to you asap&quot;</span>
+            <span style="color:#569CD6;">else</span>
+
+                <span style="color:#57A64A;">// 3. Offer to talk to elves, or take a mesasge</span>
+                <span style="color:#569CD6;">let!</span> keyPress = waitForKeypress <span style="color:#D69D85;">&quot;Please press 1 to talk to one of our elves, or 2 to leave us a message&quot;</span> 1
+                <span style="color:#569CD6;">match</span> keyPress <span style="color:#569CD6;">with</span>                
+                | <span style="color:#D69D85;">&quot;1&quot;</span> <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return!</span> listQueuesAndWaitForResponse()
+                | <span style="color:#D69D85;">&quot;2&quot;</span> <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> TakeMessage <span style="color:#D69D85;">&quot;Please leave your message after the beep&quot;</span>
+                <span style="color:#57A64A;">// Strictly here we should repeadly read the message using recursion, but for conciseness just hangup</span>
+                | _   <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">return</span> Hangup <span style="color:#D69D85;">&quot;Happy christmas!&quot;</span>   
+</pre></div>
+<p>Lammy whips out a quick test, writing a small harness that takes a call program, and a list of key presses, and runs the
+workflow, listing out progress and what is returns at each step:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">let</span> <span style="color:#569CD6;">rec</span> runIt listOfKeyPresses csr =
+    <span style="color:#569CD6;">match</span> csr <span style="color:#569CD6;">with</span>
+    | Complete(x)        <span style="color:#569CD6;">-&gt;</span> 
+        printfn <span style="color:#D69D85;">&quot;Complete: %A&quot;</span> x
+    | InProgress(x,next) <span style="color:#569CD6;">-&gt;</span> 
+        printfn <span style="color:#D69D85;">&quot;Stepped: %A&quot;</span> x
+        <span style="color:#569CD6;">match</span> listOfKeyPresses <span style="color:#569CD6;">with</span>
+        | [] <span style="color:#569CD6;">-&gt;</span> 
+            failwith <span style="color:#D69D85;">&quot;Run out of input keys&quot;</span>
+        | keysPressed::futureKeys <span style="color:#569CD6;">-&gt;</span>
+            printfn <span style="color:#D69D85;">&quot;key = %s&quot;</span> keysPressed
+            runIt futureKeys (next keysPressed)
+</pre></div>
+<p>Lammy tries out the different scenarios to make sure everything is working as expected:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+takeCall <span style="color:#D69D85;">&quot;123&quot;</span> <span style="color:#D69D85;">&quot;456&quot;</span> (DateTime(2017,12,24)) |&gt; runIt [ ]
+<span style="color:#57A64A;">// Complete: Hangup &quot;I&#39;m sorry, we are now shut for the rest of year, happy holidays !&quot;</span>
+
+takeCall <span style="color:#D69D85;">&quot;123&quot;</span> <span style="color:#D69D85;">&quot;456&quot;</span> (DateTime(2017,12,22,17,0,0)) |&gt; runIt [ ]
+<span style="color:#57A64A;">// Complete: TakeMessage &quot;I&#39;m sorry, we are closed for the day, please leave a message and we&#39;ll get back to you asap&quot;</span>
+
+takeCall <span style="color:#D69D85;">&quot;123&quot;</span> <span style="color:#D69D85;">&quot;456&quot;</span> (DateTime(2017,12,22,12,0,0)) |&gt; runIt [ <span style="color:#D69D85;">&quot;2&quot;</span> ]
+<span style="color:#57A64A;">// Stepped: WaitForKeypresses (&quot;Please press 1 to talk to one of our elves, or 2 to leave us a message&quot;,1)</span>
+<span style="color:#57A64A;">// key = 2</span>
+<span style="color:#57A64A;">// Complete: TakeMessage &quot;Please leave your message after the beep&quot;</span>
+
+takeCall <span style="color:#D69D85;">&quot;123&quot;</span> <span style="color:#D69D85;">&quot;456&quot;</span> (DateTime(2017,12,22,12,0,0)) |&gt; runIt [ <span style="color:#D69D85;">&quot;1&quot;</span>; <span style="color:#D69D85;">&quot;4&quot;</span>; <span style="color:#D69D85;">&quot;2&quot;</span> ]
+<span style="color:#57A64A;">// Stepped: WaitForKeypresses (&quot;Please press 1 to talk to one of our elves, or 2 to leave us a message&quot;,1)</span>
+<span style="color:#57A64A;">// key = 1</span>
+<span style="color:#57A64A;">// Stepped: WaitForKeypresses (&quot;Please press 1 to discuss naughty lists, press 2 to discuss a reindeer malfunction, press 3 for any other enquires&quot;, 1)</span>
+<span style="color:#57A64A;">// key = 4</span>
+<span style="color:#57A64A;">// Stepped: WaitForKeypresses (&quot;Please press 1 to discuss naughty lists, press 2 to discuss a reindeer malfunction, press 3 for any other enquires&quot;, 1)</span>
+<span style="color:#57A64A;">// key = 2</span>
+<span style="color:#57A64A;">// Complete: ConnectToQueue &quot;Naughty raindeer&quot;</span>
+</pre></div><h2 id="hooking-up-to-the-real-server">Hooking up to the real server</h2>
+<p>Lammy is now very happy, he just needs to plumb the workflow logic into a server, ready to be called by Twilio.</p>
+<p>The twilio server expects XML, so the first job is to map from nice F# types to yucky OO XML objects, using the Twilio
+nuget pacakge, and reading the <a href="https://www.twilio.com/docs/api/twiml/twilio_request">TwiML docs</a> gives:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#608B4E;">///</span><span style="color:#608B4E;"> Serialize the TwiML objects to XML string</span>
+<span style="color:#569CD6;">let</span> toXml (r:#TwiML) = r.ToString(System.Xml.Linq.SaveOptions.None)
+
+<span style="color:#608B4E;">///</span><span style="color:#608B4E;"> Convert our internal commands into the XML that twilio expects</span>
+<span style="color:#569CD6;">let</span> commandToXML url email cmd = 
+    <span style="color:#569CD6;">let</span> say msg = VoiceResponse().Append(Say(msg))
+
+    <span style="color:#569CD6;">match</span> cmd <span style="color:#569CD6;">with</span>
+
+    | ConnectToQueue(queueName) <span style="color:#569CD6;">-&gt;</span>
+        <span style="color:#57A64A;">// https://www.twilio.com/docs/api/twiml/dial</span>
+        <span style="color:#57A64A;">// Assume: conferences are used for call queues</span>
+        VoiceResponse().Append( Dial().Append(Conference(queueName)))
+
+    | Hangup(msg) <span style="color:#569CD6;">-&gt;</span>
+        <span style="color:#57A64A;">// https://www.twilio.com/docs/api/twiml/hangup</span>
+        say(msg).Append(Twilio.TwiML.Voice.Hangup())
+
+    | TakeMessage(msg) <span style="color:#569CD6;">-&gt;</span>
+        <span style="color:#57A64A;">// https://www.twilio.com/labs/twimlets/voicemail</span>
+        say(msg).Append(Redirect( Uri( sprintf <span style="color:#D69D85;">&quot;http://twimlets.com/voicemail?Transcribe=false&amp;Message=&#39;&#39;&amp;Email=%s&quot;</span> email )))
+
+    | WaitForKeypresses(msg, numberDigits) <span style="color:#569CD6;">-&gt;</span>
+        <span style="color:#57A64A;">// https://www.twilio.com/docs/api/twiml/gather</span>
+        say(msg).Append(Gather(input = Gather.InputEnum.Dtmf, numDigits = Nullable.op_Implicit(numberDigits)))
+</pre></div>
+<p>So for example</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+Hangup <span style="color:#D69D85;">&quot;I&#39;m sorry, we are now shut for the rest of year, happy holidays !&quot;</span>
+</pre></div>
+<p>would be converted to the following xml:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#808080;">&lt;</span><span style="color:#E6E6E6;">Response</span><span style="color:#808080;">&gt;</span>
+  <span style="color:#808080;">&lt;</span><span style="color:#E6E6E6;">Say</span><span style="color:#808080;">&gt;</span>I&#39;m sorry, we are now shut for the rest of year, happy holidays !<span style="color:#808080;">&lt;/</span><span style="color:#E6E6E6;">Say</span><span style="color:#808080;">&gt;</span>
+  <span style="color:#808080;">&lt;</span><span style="color:#E6E6E6;">Hangup</span><span style="color:#808080;">&gt;</span><span style="color:#808080;">&lt;/</span><span style="color:#E6E6E6;">Hangup</span><span style="color:#808080;">&gt;</span>
+<span style="color:#808080;">&lt;/</span><span style="color:#E6E6E6;">Response</span><span style="color:#808080;">&gt;</span>
+</pre></div>
+<p>The last step is to run the logic and store the state. Feeling a bit dirty (it is Christmas after all), he uses a mutable Map
+that tracks each incoming call (by its <code>CallSid</code>, the unique id that Twilio for each call), that holds the callbacks when needed.</p>
+<p>He defines a simple <code>handleCall</code> that takes a url (in case any of the TwiML commands need to set a different return URL),
+an email address (needed for taking a message), and a dictionary of key:value pairs. He can then plug this into different server
+technologies like <a href="https://suave.io">Suave</a>, <a href="https://github.com/giraffe-fsharp/Giraffe">Giraffe</a>, or any C# webserver.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">open</span> System.Collections.Generic
+
+<span style="color:#569CD6;">type</span> Callback = DateTime * (string <span style="color:#569CD6;">-&gt;</span> CallHandlingProgram)
+<span style="color:#569CD6;">let</span> <span style="color:#569CD6;">mutable</span> callsInProgress: Map&lt;string,Callback&gt; = Map.empty
+
+<span style="color:#569CD6;">let</span> removeFromMap callsid = 
+    <span style="color:#569CD6;">fun</span> _ <span style="color:#569CD6;">-&gt;</span> callsInProgress &lt;- callsInProgress.Remove(callsid) 
+    |&gt; lock callsInProgress 
+
+<span style="color:#569CD6;">let</span> addToMap callsid f =
+    <span style="color:#569CD6;">fun</span> _ <span style="color:#569CD6;">-&gt;</span> callsInProgress &lt;- callsInProgress.Add(callsid,(DateTime.Now,f))  
+    |&gt; lock callsInProgress 
+
+<span style="color:#569CD6;">let</span> stepProgram callid inMap step = 
+    <span style="color:#569CD6;">match</span> step <span style="color:#569CD6;">with</span>
+    | Complete(response)-&gt;
+        <span style="color:#569CD6;">if</span> inMap <span style="color:#569CD6;">then</span> removeFromMap callid
+        response
+    | InProgress(response,f) <span style="color:#569CD6;">-&gt;</span>
+        addToMap callid f
+        response
+
+<span style="color:#569CD6;">let</span> handleCall (url:string) (email:string) (parms:Dictionary&lt;string,string&gt;) : VoiceResponse =
+    <span style="color:#569CD6;">let</span> callid = parms.[<span style="color:#D69D85;">&quot;CALLSID&quot;</span>]
+
+    <span style="color:#569CD6;">match</span> callsInProgress.TryFind callid <span style="color:#569CD6;">with</span>
+    | None <span style="color:#569CD6;">-&gt;</span>
+        <span style="color:#57A64A;">// This is a new call, lets get the workflow to run</span>
+        <span style="color:#569CD6;">let</span> program = takeCall parms.[<span style="color:#D69D85;">&quot;FROM&quot;</span>] parms.[<span style="color:#D69D85;">&quot;TO&quot;</span>] System.DateTime.Now
+        stepProgram callid <span style="color:#569CD6;">false</span> program
+
+    | Some (_,program) <span style="color:#569CD6;">-&gt;</span>
+        <span style="color:#57A64A;">// This is a program waiting for a callback, so run it with the digits entered</span>
+        <span style="color:#569CD6;">let</span> result = program parms.[<span style="color:#D69D85;">&quot;DIGITS&quot;</span>]
+        stepProgram callid <span style="color:#569CD6;">true</span> result
+
+    |&gt; TwilioResults.commandToXML url email
+</pre></div>
+<p>Lammy happens to have an existing Asp.net core 2 C# site, so he adds the F# as a class library, and uses:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">public</span> IActionResult Elf()
+{
+    <span style="color:#569CD6;">var</span> details = Request.Method == <span style="color:#D69D85;">&quot;GET&quot;</span> ?
+        Request.Query.ToDictionary(a =&gt; a.Key.ToUpper(), a =&gt; a.Value.First()) :
+        Request.Form.ToDictionary(a =&gt; a.Key.ToUpper(), a =&gt; a.Value.First());
+    <span style="color:#569CD6;">var</span> url = String.Format(<span style="color:#D69D85;">&quot;{0}://{1}{2}&quot;</span>, Request.Scheme, Request.Host, Request.Path);
+    <span style="color:#569CD6;">return</span> Workflow.handleCall(url, <span style="color:#D69D85;">&quot;lammy@TheNorthPole.mil&quot;</span>, details).xml();
+}
+</pre></div>
+<p>He configures the Twilio number to send webhook calls to the <code>Elf</code> action url, and he's away !</p>
+<p><img src="/files/elf_cheer.jpg" alt="elf cheer" /></p>
+<p>One thing the Lammy worries about, is what happens if a call is half way through and Twilio never calls back. Isn't he
+going to be left with a half done workflow, taking up memory.</p>
+<p>He decides that a simple solution is a check once every minute
+and clear up any old workflows that haven't been called in the last 5 minutes (the <code>callsInProgress</code> Map already tracks when the workflow was last run ).</p>
+<p>He plans to write this, and get rid of the mutable state by putting it in an Agent, but runs out of time due to his toy making workload (nothing to do with the Eggnog I can assure you).</p>
+<h2 id="discussion">Discussion</h2>
+<p>There are lots of ways Lammy could extend this approach:</p>
+<ul>
+<li>He could use an Agent to host each individual call, and the receive with a timeout feature would be ideal for clearing up.</li>
+<li>He could extend the different things we can ask Twilio to do by adding to the <code>PhoneCommand</code> type.</li>
+<li>He could make the callbacks more type safe, representing other situations like timeouts etc. within the type system.</li>
+<li>He could write a similar workflow for SMS message handling</li>
+</ul>
+<p>Within the workflow itself, he could:</p>
+<ul>
+<li>Ask the caller to enter a security number and lookup customer info from a database based on the number they are calling from,
+validating the caller with the security number</li>
+<li>Use outgoing calls to Twilio to check how many people are currently waiting in queues, and take a message if they are too busy</li>
+</ul>
+<p>etc.</p>
+<p>Writing workflows can be difficult to get your head around at first (it was for Lammy), but they are worth it, allowing you to write
+complex logic in a simple way, without needing to wait for the compiler team (e.g. async await in C#).</p>
+<p>The full code can be found <a href="https://gist.github.com/davidglassborow/4f56ab18162a7e9ab3ebb246c1394c7f">on github</a> or <a href="/files/elf.fsx">here</a>.</p>
+<p>Happy Christmas !</p>
+<p><img src="/files/santa-on-phone.gif" alt="" /></p>
+<h2 id="references-and-more-information">References and more information</h2>
+<ul>
+<li><a href="https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/computation-expressions">Microsoft Computation Expression docs</a></li>
+<li><a href="https://fsharpforfunandprofit.com/series/computation-expressions.html">F# for fun and profit - computation expression series</a></li>
+<li><a href="http://tomasp.net/academic/papers/computation-zoo/poster-tfp.pdf">Computation Zoo Poster</a></li>
+<li><a href="http://tomasp.net/academic/papers/computation-zoo/computation-zoo.pdf">The F# Computation Expression Zoo paper by Tomas and Don</a></li>
+<li><a href="http://fsharp.org/specs/language-spec/4.0/FSharpSpec-4.0-latest.pdf">FSharp Spec</a>, section 6.3.10 - Computation Expressions</li>
+<li><a href="https://stackoverflow.com/questions/40052256/how-does-continuation-monad-really-work">Stackoverflow: How does continuation monad really work</a></li>
+<li><a href="http://blog.sigfpe.com/2008/12/mother-of-all-monads.html">The Mother of all Monads</a></li>
+<li><a href="http://www.haskellforall.com/2012/12/the-continuation-monad.html">The Continuation Monad</a></li>
+</ul>
+
+        </div>
+
+        <div id="disqus_thread"></div>
+        <script>
+            var disqus_config = function () {
+                this.page.url = 'https://blogs.conceptfirst.com/2017/12/21/answer-the-phone.html';
+                this.page.identifier = 'https://blogs.conceptfirst.com/2022/09/12/2017/12/21/answer-the-phone.html';
+            };
+
+            (function () {
+                var d = document, s = d.createElement('script');
+                s.src = 'https://conceptfirst.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+    </article>
+</div>
+
+
+
+
+        </main>
+
+        <footer class="site-footer">
+            <div class="wrapper">
+            <h2 class="footer-heading">Concept First Blog</h2>
+                <div class="footer-col-wrapper">
+                    <div class="footer-col footer-col-1">
+                        <ul class="contact-list">
+                        <li>Concept First Blog</li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-2">
+                        <ul class="social-media-list">
+                            <li>
+                                <a href="https://github.com/conceptfirst">
+                                    <span class="icon icon--github">
+                                        <svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z" /></svg>
+                                    </span><span class="username">conceptfirst</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-3">
+                        <p>IT consultancy, web development, data analysis and application development</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>

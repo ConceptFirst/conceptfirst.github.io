@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet map</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
+	integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+	crossorigin=""/>
+	<link rel="stylesheet" href="https://cdn.rawgit.com/ConceptFirst/leaflet-control-geocoder/master/Control.Geocoder.css" />
+	<style>
+		html, body, #map { height:100%; width:100%; padding:0px; margin:0px; }
+	</style>
+</head>
+<body>
+	<div id="map"></div>
+	<script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
+	integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+	crossorigin=""></script>
+	
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCtFuHpbT31n2vMsCrqZD7AbkbG6-dLR2o" async defer></script>
+
+	<script src='https://unpkg.com/leaflet.gridlayer.googlemutant@latest/Leaflet.GoogleMutant.js'></script>
+
+	<script src="https://cdn.rawgit.com/ConceptFirst/leaflet-control-geocoder/master/Control.Geocoder.js"></script>
+	<script>
+
+		// Constants for attribution
+		var osm_att = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ';
+		
+		var mb_attribution = osm_att +	'Imagery © <a href="http://mapbox.com">Mapbox</a>';
+		var thu_attribution = osm_att +	'Imagery © <a href="http://www.thunderforest.com">Thunderforest</a>';
+
+		// Build different tile layers (the id is what switchs between different mapbox tiles)
+		var 
+				osm     = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', { attribution: osm}),
+				roadmap = new L.gridLayer.googleMutant( { type: 'roadmap' }),
+				terrain = new L.gridLayer.googleMutant({ type: 'terrain'}),
+				hybrid  = new L.gridLayer.googleMutant({ type: 'hybrid'});			
+
+		function getJsonFromUrl() {
+		  var query = location.search.substr(1);
+		  var data = query.split("&");
+		  var result = {};
+		  for(var i=0; i<data.length; i++) {
+		    var item = data[i].split("=");
+		    result[item[0]] = item[1];
+		  }
+		  return result;
+		}
+
+		var url_params = getJsonFromUrl();	
+		// Load the map, overriing location by url params if provided
+		var map = L.map('map', {
+			center: [ url_params.lat || 50.505, url_params.lng || -4.49],
+			zoom: url_params.zoom || 8,
+			layers: [osm]
+		});
+
+		var baseLayers = {
+			"OSM": osm,
+			"Google Road": roadmap,
+			"Google Satelite": hybrid,
+			"Google Terrain": terrain
+		};
+
+		L.control.layers(baseLayers, {}).addTo(map);
+
+		var geocoder = L.Control.Geocoder.nominatim(),
+				geo_control = L.Control.geocoder({geocoder: geocoder, position:'topleft', showResultIcons:true }).addTo(map);
+		
+	</script>
+</body>
+</html>

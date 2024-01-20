@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Answering the phone, functionally, again</title>
+  <link rel="stylesheet" href="/files/main.css">
+  <link rel="alternate" type="application/rss+xml" title="Concept First Blog" href="feed.xml">
+
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-774963-2', 'auto');
+        ga('send', 'pageview');
+    </script>
+  
+</head>
+    <body>
+        <header class="site-header" role="banner">
+            <div class="wrapper">
+            <a class="site-title" href="/">Concept First Blog</a>
+                <nav class="site-nav">
+                    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+                    <label for="nav-trigger">
+                        <span class="menu-icon">
+                            <svg viewBox="0 0 18 15" width="18px" height="15px">
+                                <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" />
+                                <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" />
+                                <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" />
+                            </svg>
+                        </span>
+                    </label>
+
+                    <div class="trigger">
+                        <a class="page-link" href="/about/">About</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="page-content" aria-label="Content">
+
+            
+<div class="wrapper">
+    <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+        <header class="post-header">
+            <h1 class="post-title" itemprop="name headline">Answering the phone, functionally, again</h1>
+            <p class="post-meta">
+                <time datetime="14/12/2018 08:30:00" itemprop="datePublished">Dec 14, 2018</time>
+                • <span itemprop="author" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">David</span></span>
+            </p>
+        </header>
+
+        <div class="post-content" itemprop="articleBody">
+            <h1 id="f-workflow-for-working-with-twilio">F# workflow for working with Twilio</h1>
+<p><em>tl;dr: using workflows and F# agents for request/response APIs, and using history replay for resilence and scalability</em></p>
+<p>This post is part of the <a href="https://sergeytihon.com/2018/10/22/f-advent-calendar-in-english-2018/">2018 F# Advent calendar</a>
+blog series done every year by the F# community, and is a follow up to my post from last year, <a href="https://blogs.conceptfirst.com/2017/12/21/answer-the-phone.html">Answering the phone, functionally</a> (and probably won't make much sense if you've not read that post).</p>
+<p>Last year I showed an F# computation expression / workflow DSL for handling an automated phone system.
+A similar approach would be ideally suited for implementing an <a href="https://developer.amazon.com/alexa-skills-kit">Alexa Skill</a>.</p>
+<p>I was planning to implement the previous workflow in the new serverless <a href="https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview">Azure Durable Functions</a>, allowing my santa phone system to run
+on the serverless platforms and scale easily.</p>
+<p>However looking at Durable Functions (DFs) in more detail, I came to the conclusion they weren't a good fit for what I was trying to acheive,
+so I attempted to shamelessly copy some ideas from DF, in a rush, in an attempt to meet the blog deadline 😄</p>
+<p>Once of the nice things about using a workflow in the first place is it's interpretation is completely decoupled from its logic, so running it using
+a different approach didn't require any changes to the core code.</p>
+<h2 id="sidebar-on-alexa-skills">Sidebar on Alexa skills</h2>
+<p>The code is this article is based on my Twilio integration, but the ideas all translate to Alexa and other similar products.
+I setup an example Alexa skill as a learning exercise, designed to encourage my two youngest boys it was time to go to bed.</p>
+<p>The first thing is to register with AWS on their Alexa dev site, setup a new skill, and enter the start words Alexa will recognise
+to activate your skill. So in the example below, if I say to Alexa &quot;tell the boys&quot;, this skill will be activated.</p>
+<p><img src="/files/alexaStart.png" alt="Alexa start" /></p>
+<p>It's then a case of setting up particular <em>intents</em>, which are the individual features the skill can provide. In this case I've just setup one, allowing the overable
+sentance of &quot;tell the boys get ready for bed&quot;.</p>
+<p><img src="/files/alexaWords.png" alt="Alexa setup" /></p>
+<p>Then just configure the endpoint AWS will call once its recongised a skills+intent combination:</p>
+<p><img src="/files/alexaEndpoint.png" alt="Alexa api" /></p>
+<p>A simple F# azure function that tells Alexa to speak a sentance, and then plays comedy sound effect, very straight forward.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+#r <span style="color:#D69D85;">&quot;System.Net.Http&quot;</span>
+#r <span style="color:#D69D85;">&quot;Newtonsoft.Json&quot;</span>
+
+<span style="color:#569CD6;">open</span> System.Net
+<span style="color:#569CD6;">open</span> System.Net.Http
+<span style="color:#569CD6;">open</span> Newtonsoft.Json
+
+<span style="color:#569CD6;">type</span> Named = { name: string }
+<span style="color:#569CD6;">type</span> OutputSpeech = { ``<span style="color:#569CD6;">type</span>``:string; ssml:string }
+<span style="color:#569CD6;">type</span> Card = { ``<span style="color:#569CD6;">type</span>``:string; title:string; content:string }
+<span style="color:#569CD6;">type</span> AlexaResponse = { outputSpeech: OutputSpeech; card: Card }
+<span style="color:#569CD6;">type</span> AlexaWrapper = { version: string; response: AlexaResponse }
+
+<span style="color:#569CD6;">let</span> reply() =
+    {
+        version = <span style="color:#D69D85;">&quot;1.0&quot;</span>
+        response = {
+            outputSpeech = {
+                ssml = <span style="color:#D69D85;">&quot;&lt;speak&gt;Adam and Ben can you &lt;emphasis level=&#39;strong&#39;&gt;PLEASE&lt;/emphasis&gt; get ready for bed &lt;audio src=&#39;https://s3.amazonaws.com/ask-soundlibrary/impacts/amzn_sfx_punch_01.mp3&#39;/&gt;&lt;/speak&gt;&quot;</span>
+                ``<span style="color:#569CD6;">type</span>`` = <span style="color:#D69D85;">&quot;SSML&quot;</span>
+            }
+            card = {
+                title = <span style="color:#D69D85;">&quot;The House&quot;</span>
+                content = <span style="color:#D69D85;">&quot;Welcome to trying to control alex and tom&quot;</span>
+                ``<span style="color:#569CD6;">type</span>`` = <span style="color:#D69D85;">&quot;Simple&quot;</span>
+            }
+        }
+    }
+
+<span style="color:#569CD6;">let</span> Run(req: HttpRequestMessage, log: TraceWriter) =
+    <span style="color:#569CD6;">let</span> json = JsonConvert.SerializeObject(reply()
+    <span style="color:#569CD6;">new</span> HttpResponseMessage(HttpStatusCode.OK, Content = <span style="color:#569CD6;">new</span> StringContent(json, System.Text.Encoding.UTF8, <span style="color:#D69D85;">&quot;application/json&quot;</span>))
+</pre></div>
+<p>This was just a simple end-to-end test, Alexa skills can be much more complex with a back and forth (i.e. the sort of things the F# workflow is designed to make easy to write).
+The <a href="https://developer.amazon.com/docs/custom-skills/request-and-response-json-reference.html">API reference</a> contains all the details.</p>
+<h2 id="quick-intro-to-durable-functions">Quick intro to Durable Functions</h2>
+<p>Durable functions are an add-onto Azure functions, a way of dealing with State in a serverless environment. The idea is to have long lived 'orchestration' durable functions which can
+handle complex patterns of logic that can persist over minutes/hours/days (another common term for this would be 'Sagas').</p>
+<p>They can kick off other pieces of logic in normal serverless functions, and
+then go to sleep (i.e. no cost) until the other functions are finished. They can do sequences of calls, parallel calls, or waiting on 'events' from other systems.</p>
+<p><img src="/files/fan-out-fan-in.png" alt="DF fan pattern" /></p>
+<p>The take advantage of the async/await features of both C# and Javascript to make the code very linear and readable dispite being highly asychronous, e.g.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">public</span> <span style="color:#569CD6;">static</span> <span style="color:#569CD6;">async</span> Task&lt;Status&gt; Run(DurableOrchestrationContext ctx)
+{
+    <span style="color:#569CD6;">var</span> x = <span style="color:#569CD6;">await</span> ctx.CallActivityAsync&lt;Record&gt;(<span style="color:#D69D85;">&quot;LoadFromDatabase&quot;</span>);
+    <span style="color:#569CD6;">var</span> y = <span style="color:#569CD6;">await</span> ctx.CallActivityAsync&lt;Answer&gt;(<span style="color:#D69D85;">&quot;RunCalculations&quot;</span>, x);
+    <span style="color:#569CD6;">var</span> z = <span style="color:#569CD6;">await</span> ctx.CallActivityAsync&lt;RecordID&gt;(<span style="color:#D69D85;">&quot;SaveToDatabase&quot;</span>, y);
+    <span style="color:#569CD6;">return</span>  <span style="color:#569CD6;">await</span> ctx.CallActivityAsync&lt;Status&gt;(<span style="color:#D69D85;">&quot;EmailReport&quot;</span>, z);
+}
+</pre></div>
+<p>or the equivalent in Javascript:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">const</span> df = require(<span style="color:#D69D85;">&quot;durable-functions&quot;</span>);
+
+module.exports = df.orchestrator(<span style="color:#569CD6;">function</span>*(ctx) {
+    <span style="color:#569CD6;">const</span> x = yield ctx.df.callActivity(<span style="color:#D69D85;">&quot;LoadFromDatabase&quot;</span>);
+    <span style="color:#569CD6;">const</span> y = yield ctx.df.callActivity(<span style="color:#D69D85;">&quot;RunCalculations&quot;</span>, x);
+    <span style="color:#569CD6;">const</span> z = yield ctx.df.callActivity(<span style="color:#D69D85;">&quot;SaveToDatabase&quot;</span>, y);
+    <span style="color:#569CD6;">return</span> yield ctx.df.callActivity(<span style="color:#D69D85;">&quot;EmailReport&quot;</span>, z);
+});
+</pre></div>
+<p>The clever thing to me is how durable functions are resurrected after being put to sleep via await (i.e. being shut down half way through their lifetime).</p>
+<p>Behind the scenes the system persists any communication between a durable function and the outside world, and when it needs to wake up,
+rather than having frozen and stored the progress of the durable function itself, it uses an event source approach to resurrect the durable function back to where it was.
+The previous calls it did are played back to the code of the DF to get it back to the status it was in before the sleep. The events are stored in Azure Storage, in a JSON format.
+The nice thing is that the 'resurrected' DF could be on a completely different machine on a different contintent, it makes no difference (which is obviously
+essential for serverless) and also nicely solves any reliability concerns from servers falling over etc.</p>
+<p>In the examples above, whilst the DF is awaiting on <code>await ctx.CallActivityAsync&lt;object&gt;(&quot;RunCalculations&quot;, x);</code>
+it will be shut down completely.  Once the <code>RunCalculations</code> has returns a result, the DF will be recreated, replayed (so the result of <code>await ctx.CallActivityAsync&lt;object&gt;(&quot;LoadFromDatabase&quot;)</code> will come from the event store, not actually a real call to the database), and then the code will carry on with the new result from <code>RunCalculations</code>.</p>
+<p>It is also possible to tweak the time a DF stays alive before sleeping, for keeping 'hot' durable functions for a certain period where you expect the awaits to only be for a short period of time, for efficiency.</p>
+<p>A key thing for this to work, is that the workflow be deterministic. Replays have to get back to exactly the same spot, so the code must be written to be always do the same
+thing given the same data (so even <code>DataTime.Now</code> is out ) - see <a href="https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-checkpointing-and-replay#orchestrator-code-constraints">details on ensuring determinism</a>.</p>
+<h2 id="why-dfs-didnt-work-for-voice-on-twilio">Why DFs didn't work for voice on Twilio</h2>
+<p>I started off planning to implement the workflows inside Durable Functions, but during the implementation, and after some serious head scratching,
+I came to the conclusion what I was trying to acheive wasn't going to work.</p>
+<p>The essential problem is that durable functions are designed to handle async requests and responses (by piggybacking on Task),
+and not the syncronous request/response we need for Twilio (or Alexa) 🙁</p>
+<p><img src="/files/sad_buddy.jpg" alt="Sad Buddy Elf" /></p>
+<p>Although you can kick off a new durable function from an incoming HTTP request, or send new events to it once it is running,
+you can't really get any sync response back from the DF until it has completed. You can <a href="https://github.com/Azure/azure-functions-durable-extension/issues/539#issuecomment-444984446">fake it</a> using the DF custom status feature
+and busy waiting, but for the moment it's a bit of a hack, and the busy wait is going to increase your costs, so not really a good fit
+for what I was exploring.</p>
+<p>There is already <a href="https://github.com/Azure/azure-functions-durable-extension/issues/22">discussion on the github repo</a> about changes to support this, but
+this is really moving the DFs toward a full agent system, which is a much more complex undertaking, and Microsoft already has two other
+agent frameworks ( <a href="https://github.com/dotnet/orleans">Orleans</a> and <a href="https://github.com/Microsoft/service-fabric">Service Fabric</a> ) already.</p>
+<p>Durable Functions would have been ideal if sync resposnes weren't required, a workflow based on SMS messages would have been straight forward,
+in fact Microsoft even have <a href="https://docs.microsoft.com/en-gb/azure/azure-functions/durable/durable-functions-monitor">an example</a> using SMS via Twilio.</p>
+<h2 id="switchboard-and-callhandlers">Switchboard and CallHandlers</h2>
+<p>I've decided to host the individual calls using F# Agents ( aka <code>MessageBoxProcessor</code> ), called <em>CallHandlers</em>. Agents scale well by using the underlying Task Pool,
+they manage state using tail recursive async calls, and the avoid threading issues by handling messages in strict order.</p>
+<p>I've also created a <em>Switchboard</em> agent which has the responsiblity of tracking in-progress calls.  In the code, the agents are wrapped in objects to hide away the
+implementation.</p>
+<p>The diagram below shows the calls from incoming HTTP calls (in blue), being routed through the switchboard and then processed by the individual call handlers (in yellow).</p>
+<p><img src="/files/Switchboard.png" alt="Switchboard model" /></p>
+<p>One interesting feature is how the switchboard can pass the <code>AsyncReplyChannel</code> straight through to the call handler. I copied this idea from <a href="https://twitter.com/davidglassborow/status/780361776089145345">@theburningmonk</a> from his NDC 2016 talk discussing a similar approach.</p>
+<p><img src="/files/yan.png" alt="NDC talk" /></p>
+<p>In the sequence diagram below, you can see the CallHandler responding directly to the HttpEndpoint, not needing to go via the Switchboard.</p>
+<p><img src="/files/call_mem.png" alt="seqeuence in memory" /></p>
+<p>The logic of the switchboard is captured by the messages the agent handles. It is generic, requiring the call ids be comparable, and that the
+handles support disposal.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#608B4E;">///</span><span style="color:#608B4E;"> The protocol definiton for interacting with the switch board agent.</span>
+<span style="color:#608B4E;">///</span><span style="color:#608B4E;"> This is essentially a thread safe Map&lt;&#39;Id,&#39;Handlers&gt;</span>
+<span style="color:#569CD6;">type</span> SwitchBoardProtocol&lt;<span style="color:#D69D85;">&#39;Id,&#39;</span>Handler <span style="color:#569CD6;">when</span> <span style="color:#D69D85;">&#39;Id: comparison and &#39;</span>Handler :&gt; IDisposable&gt; =
+| StoreHandler     <span style="color:#569CD6;">of</span> id:<span style="color:#D69D85;">&#39;Id * handler:&#39;</span>Handler
+| FindHandler      <span style="color:#569CD6;">of</span> id:<span style="color:#D69D85;">&#39;Id * reply: AsyncReplyChannel&lt;&#39;</span>Handler option&gt;
+| RemoveHandler    <span style="color:#569CD6;">of</span> id:&#39;Id    <span style="color:#57A64A;">// This is also responsible for disposing the object</span>
+| RequestOfHandler <span style="color:#569CD6;">of</span> id:<span style="color:#D69D85;">&#39;Id * toRun:( Result&lt;&#39;</span>Handler,string&gt; <span style="color:#569CD6;">-&gt;</span> unit )
+</pre></div>
+<p>The last message, <code>RequestOfHandler</code> is there to support directly passing a message through to the call handler.</p>
+<p>The call handler messages are even simpler:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">type</span> CallDetails = {  NumberFrom:string; NumberTo:String; CallAt: DateTime }
+
+<span style="color:#569CD6;">type</span> CallResponse =
+| CompletedResponse <span style="color:#569CD6;">of</span> PhoneCommand
+| IntermediateResponse <span style="color:#569CD6;">of</span> PhoneCommand
+
+<span style="color:#569CD6;">type</span> CallHandlerMessages =
+| CallStarted <span style="color:#569CD6;">of</span> CallDetails * AsyncReplyChannel&lt;CallResponse&gt;
+| DigitsProvided <span style="color:#569CD6;">of</span> string * AsyncReplyChannel&lt;CallResponse&gt;
+</pre></div>
+<p>When a call comes in, we post a <code>CallStarted</code> to the call handler and return the response. Any further calls are digits being entered, and they are
+sent to the call handler via <code>DigitsProvided</code> repeatadly until the call handler lets us know the call has finished via a CompletedResponse.</p>
+<h2 id="copying-the-state-replay">Copying the state replay</h2>
+<p>This all works well, so the next step is to consider how would we do if we had lots of simulationous calls, but big delays between key presses etc. ?
+The current setup would have all the 'in flight' call handling programs in memory. If they are complex, or have lots of memory in scope, we might
+run out of resources.</p>
+<p>So instead I've attempted to copy the approach of saving state to allow in progress calls to be resurrected and 'replayed'.</p>
+<p><img src="/files/call_file.png" alt="sequence with replay" /></p>
+<p>To do this, we add a new message type to the call handler, allowing peristence to be requested.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">type</span> <span style="color:#569CD6;">internal</span> CallHandlerMessages =
+...
+| PersistToStorage
+</pre></div>
+<p>We also need to make sure the state is captured as we go, so the internal state of the call handler agent
+contains the current program (if we have one, we may not if we've just started or we have been shutdown),
+as well as a list of all digits we have been sent by the caller.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">type</span> <span style="color:#569CD6;">internal</span> CallHandlerState = {
+    CurrentProgram: (string <span style="color:#569CD6;">-&gt;</span> Workflow.CallHandlingProgram) option
+    Digits: string list
+} <span style="color:#569CD6;">with</span> <span style="color:#569CD6;">static</span> <span style="color:#569CD6;">member</span> NotStarted = { CurrentProgram = None; Digits = [] }
+</pre></div>
+<p>Then the code required to replay history is suprisingly easy.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">let</span> resurrectViaReplay digitHistory =
+    <span style="color:#569CD6;">let</span> replayError _ = Workflow.Complete (Workflow.Hangup <span style="color:#D69D85;">&quot;Failed to replay history&quot;</span>)
+    <span style="color:#569CD6;">let</span> state = CallHandlerState.NotStarted
+    <span style="color:#569CD6;">let</span> <span style="color:#569CD6;">rec</span> stepDigits keyPresses program =
+        <span style="color:#569CD6;">match</span> keyPresses <span style="color:#569CD6;">with</span>
+        | []         <span style="color:#569CD6;">-&gt;</span> program
+        | key::other <span style="color:#569CD6;">-&gt;</span> <span style="color:#569CD6;">match</span> (stepProgram ignore state (program key)).CurrentProgram <span style="color:#569CD6;">with</span>
+                        | None <span style="color:#569CD6;">-&gt;</span> replayError
+                        | Some s <span style="color:#569CD6;">-&gt;</span> stepDigits other s
+    <span style="color:#569CD6;">let</span> nextStep = <span style="color:#569CD6;">match</span> (stepProgram ignore state &lt;| getProgram()).CurrentProgram <span style="color:#569CD6;">with</span>
+                    | None <span style="color:#569CD6;">-&gt;</span> replayError
+                    | Some p <span style="color:#569CD6;">-&gt;</span> p
+    nextStep |&gt; stepDigits (List.rev digitHistory)
+</pre></div>
+<p>Note we need to detect replay errors where we have a situation like the phone program says it has completed
+but we still have key presses to replay, this is likely caused by non-determinism in the system.</p>
+<p>With this in place, the main agent loop for the call handler is changed to wait a certain period of time
+for a message. With no message arriving, or when explicitly told to persist, we release the call handling program.
+Next time it is required, it is then recreated via <code>resurrectViaReplay</code>.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">let</span> <span style="color:#569CD6;">rec</span> messageLoop (state: CallHandlerState) = <span style="color:#569CD6;">async</span> {
+    <span style="color:#569CD6;">let!</span> message = inbox.TryReceive(int persistAfter.TotalMilliseconds)
+    <span style="color:#569CD6;">let</span> newState =
+        <span style="color:#569CD6;">match</span> message <span style="color:#569CD6;">with</span>
+        | Some (CallStarted(caller)) <span style="color:#569CD6;">-&gt;</span>
+            stepProgram caller.Reply state &lt;| getProgram()
+        | Some (DigitsProvided(digits,caller)) <span style="color:#569CD6;">-&gt;</span>
+            <span style="color:#569CD6;">let</span> program = <span style="color:#569CD6;">match</span> state.CurrentProgram <span style="color:#569CD6;">with</span>
+                          | Some program <span style="color:#569CD6;">-&gt;</span> program
+                          | None   <span style="color:#569CD6;">-&gt;</span>       resurrectViaReplay state.Digits
+            <span style="color:#569CD6;">let</span> state&#39; = stepProgram caller.Reply state &lt;| program(digits)
+            { state<span style="color:#D69D85;">&#39; with Digits = digits :: state&#39;</span>.Digits }  <span style="color:#57A64A;">// store for later replay if needed</span>
+        | Some PersistToStorage | None <span style="color:#569CD6;">-&gt;</span>
+            <span style="color:#57A64A;">// production version: persist state.Digits to secure storage</span>
+            { state <span style="color:#569CD6;">with</span> CurrentProgram = None  }
+    <span style="color:#569CD6;">return!</span> messageLoop newState }
+</pre></div>
+<p>Just like durable functions, we need to be careful on non-deterministic calls, with all messages coming into the CallHandler from the outside world needing to be stored.
+In pure languages like Haskell this would be enforcable in the type system, but in F# we just need to be careful.</p>
+<p>Currently the call handling programs don't need to do any other calls (e.g. to lookup a database record), but if that is required, we need to make sure we
+add a feature to:</p>
+<ul>
+<li>Pass into the call program a standard wrapper around non-determistic calls, that memorises the response (in the same way we cache the digits pressed by the user)</li>
+<li>Have the memorised response persisted into the state</li>
+<li>Use it in replay like we do the digits</li>
+</ul>
+<p>I was hoping to add this in, but have run out of time unfortunately, but it's straight forward to do.</p>
+<p>The full code, with some basic tests, can be found on <a href="https://gist.github.com/davidglassborow/9c55a628718f15df25b9fca2dbc803f0">Github</a> or <a href="/files/phone-agents.fsx">here</a></p>
+<h3 id="future-improvements">Future improvements</h3>
+<ul>
+<li>Have the switchboard be able to store all its own state as well, and restart from complete shutdown.</li>
+<li>Have a similar timeout features in CallHandler that the caller has gone away, and clears up fully, removing itself from the Switchboard.</li>
+<li>Add a workflow and primatives for Alexa skills.</li>
+</ul>
+<h2 id="conclusions">Conclusions</h2>
+<ul>
+<li>F# Workflows are great for modelling request/response systems like Alexa and Twilio (and you can use them in <a href="https://github.com/kthompson/Actress">C# too</a>)</li>
+<li>Agents are very useful for encapsulating pieces of seperate state, and their features around waiting for a new message with a timeout is also very useful</li>
+<li>Pure functions make it possible to efficiently 'rehydrate' state via event sourcing of data, making it easy to have systems that can be shut down and started back up,
+without losing our nice linear programming model.</li>
+</ul>
+<p>Happy Christmas again !</p>
+<h2 id="references-and-more-information">References and more information</h2>
+<ul>
+<li><a href="https://developer.amazon.com/alexa-skills-kit">Amazon Alexa Skills</a></li>
+<li><a href="https://developer.amazon.com/docs/custom-skills/request-and-response-json-reference.html">Amazon Alexa API reference</a></li>
+<li><a href="https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview">Azure Durable Functions</a></li>
+<li><a href="https://vimeo.com/171942750">Yan Cui's talk on Actors</a></li>
+</ul>
+<p><img src="/files/santa-on-phone.gif" alt="santa" /></p>
+
+        </div>
+
+        <div id="disqus_thread"></div>
+        <script>
+            var disqus_config = function () {
+                this.page.url = 'https://blogs.conceptfirst.com/2018/12/14/answer-again.html';
+                this.page.identifier = 'https://blogs.conceptfirst.com/2022/09/12/2018/12/14/answer-again.html';
+            };
+
+            (function () {
+                var d = document, s = d.createElement('script');
+                s.src = 'https://conceptfirst.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+    </article>
+</div>
+
+
+
+
+        </main>
+
+        <footer class="site-footer">
+            <div class="wrapper">
+            <h2 class="footer-heading">Concept First Blog</h2>
+                <div class="footer-col-wrapper">
+                    <div class="footer-col footer-col-1">
+                        <ul class="contact-list">
+                        <li>Concept First Blog</li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-2">
+                        <ul class="social-media-list">
+                            <li>
+                                <a href="https://github.com/conceptfirst">
+                                    <span class="icon icon--github">
+                                        <svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z" /></svg>
+                                    </span><span class="username">conceptfirst</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="footer-col footer-col-3">
+                        <p>IT consultancy, web development, data analysis and application development</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>
